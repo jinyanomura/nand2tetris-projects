@@ -1,0 +1,81 @@
+class Eliza {
+    field Dictionary d;
+
+    constructor Eliza new() {
+        let d = Dictionary.new();
+        return this;
+    }
+
+    method Dictionary getD() {
+        return d;
+    }
+
+    function void printIntro() {
+        do Output.printString("HELLO, I'M ELIZA.");
+        do Output.println();
+        do Output.printString("TALK TO THE PROGRAM.");
+        do Output.println();
+        do Output.printString("ENTER 'QUIT' WHEN DONE.");
+        do Output.println();
+        return;
+    }
+
+    function void printResponse(String userInput) {
+        var Eliza e;
+        var Dictionary d;
+        var Array matches, keys, reflections, responses;
+        var List exploded, reflected;
+        var String match, out, remainder;
+        var int i, j, k, numMatch, numKey, position;
+        var boolean done;
+
+        // get necessary arrays from Dictionary.jack
+        let e = Eliza.new();
+        let d = e.getD();
+        let matches = d.getMatches();
+        let keys = d.getKeys();
+        let reflections = d.getReflections();
+        let responses = d.getResponses();
+
+        // Loop through the matches list
+        let i = 0;
+        let numMatch = 39;
+        let numKey = 12;
+        let out = responses[numMatch];
+        while (i < numMatch) {
+            let match = matches[i];
+            let position = Strings.index(userInput, match);
+            
+            if (position > -1) {
+                let position = position + match.length() + 1;
+                let exploded = Strings.split(position, userInput);
+
+                let j = 0;
+                while (j < exploded.length()) {
+                    let k = 0;
+                    let done = false;
+                    while (k < numKey) {
+                        if (Strings.isSame(exploded.extract(j), keys[k])) {
+                            let reflected = reflected.append(reflections[k]);
+                            let done = true;
+                        }
+                        let k = k + 1;
+                    }
+                    if (~done) {
+                        let reflected = reflected.append(exploded.extract(j));
+                    }
+                    let j = j + 1;
+                }
+                let remainder = Strings.join(reflected);
+                let out = responses[i];
+                let i = numMatch;
+            }
+            let i = i + 1;
+        }
+
+        let out = Strings.replace(out, "%1", remainder);
+        do Output.printString(out);
+
+        return;
+    }
+}

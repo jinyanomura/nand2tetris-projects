@@ -1,0 +1,135 @@
+class Dictionary {
+    field Array matches;
+    field Array keys;
+    field Array reflections;
+    field Array responses;
+
+    constructor Dictionary new() {
+        let matches = Array.new(39);
+        let keys = Array.new(12);
+        let reflections = Array.new(12);
+        let responses = Array.new(40);
+
+        let matches[0] = "LIFE";
+        let matches[1] = "I NEED";
+        let matches[2] = "WHY DON'T";
+        let matches[3] = "WHY CAN'T";
+        let matches[4] = "I CAN";
+        let matches[5] = "I AM";
+        let matches[6] = "I'M";
+        let matches[7] = "ARE YOU";
+        let matches[8] = "WHAT";
+        let matches[9] = "HOW";
+        let matches[10] = "BECAUSE";
+        let matches[11] = "SORRY";
+        let matches[12] = "I THINK";
+        let matches[13] = "FRIEND";
+        let matches[14] = "YES";
+        let matches[15] = "COMPUTER";
+        let matches[16] = "IS IT";
+        let matches[17] = "IT IS";
+        let matches[18] = "CAN YOU";
+        let matches[19] = "CAN I";
+        let matches[20] = "YOU ARE";
+        let matches[21] = "YOU'RE";
+        let matches[22] = "I DON'T";
+        let matches[23] = "I FEEL";
+        let matches[24] = "I HAVE";
+        let matches[25] = "I'VE";
+        let matches[26] = "I WOULD";
+        let matches[27] = "IS THERE";
+        let matches[28] = "MY";
+        let matches[29] = "YOU";
+        let matches[30] = "WHY";
+        let matches[31] = "I WANT";
+        let matches[32] = "MOTHER";
+        let matches[33] = "FATHER";
+        let matches[34] = "CHILD";
+        let matches[35] = "?";
+        let matches[36] = "HELLO";
+        let matches[37] = "HI";
+        let matches[38] = "HEY";
+
+        let keys[0] = "AM";
+        let keys[1] = "WAS";
+        let keys[2] = "I";
+        let keys[3] = "I'D";
+        let keys[4] = "I'LL";
+        let keys[5] = "MY";
+        let keys[6] = "ARE";
+        let keys[7] = "YOU'VE";
+        let keys[8] = "YOUR";
+        let keys[9] = "YOURS";
+        let keys[10] = "YOU";
+        let keys[11] = "I'M";
+
+        let reflections[0] = "ARE";
+        let reflections[1] = "WERE";
+        let reflections[2] = "YOU";
+        let reflections[3] = "YOU WOULD";
+        let reflections[4] = "YOU WILL";
+        let reflections[5] = "YOUR";
+        let reflections[6] = "AM";
+        let reflections[7] = "I HAVE";
+        let reflections[8] = "MY";
+        let reflections[9] = "MINE";
+        let reflections[10] = "ME";
+        let reflections[11] = "YOUR";
+
+        let responses[0] = "LIFE? DON'T TALK TO ME ABOUT LIFE.";
+        let responses[1] = "WHY DO YOU NEED %1?";
+        let responses[2] = "DO YOU REALLY THINK I DON'T %1?";
+        let responses[3] = "DO YOU THINK YOU SHOULD BE ABLE TO %1?";
+        let responses[4] = "HOW DO YOU KNOW YOU CAN'T %1?";
+        let responses[5] = "DID YOU COME TO ME BECAUSE YOU ARE %1?";
+        let responses[6] = "HOW DOES BEING %1 MAKE YOU FEEL?";
+        let responses[7] = "WHY DOES IT MATTER WHETHER I AM %1?";
+        let responses[8] = "WHY DO YOU ASK?";
+        let responses[9] = "HOW DO YOU SUPPOSE?";
+        let responses[10] = "IS THAT THE REAL REASON?";
+        let responses[11] = "THERE ARE MANY TIMES WHEN NO APOLOGY IS NEEDED.";
+        let responses[12] = "DO YOU DOUBT %1?";
+        let responses[13] = "TELL ME MORE ABOUT YOUR FRIENDS.";
+        let responses[14] = "YOU SEEM QUITE SURE.";
+        let responses[15] = "ARE YOU REALLY TALKING ABOUT ME?";
+        let responses[16] = "DO YOU THINK IT IS %1?";
+        let responses[17] = "YOU SEEM VERY CERTAIN.";
+        let responses[18] = "WHAT MAKES YOU THINK I CAN'T %1?";
+        let responses[19] = "PERHAPS YOU DON'T WANT TO %1.";
+        let responses[20] = "WHY DO YOU THINK I AM %1?";
+        let responses[21] = "WHY DO YOU SAY I AM %1?";
+        let responses[22] = "DON'T YOU REALLY %1?";
+        let responses[23] = "GOOD, TELL ME MORE ABOUT THESE FEELINGS.";
+        let responses[24] = "WHY DO YOU TELL ME THAT YOU'VE %1?";
+        let responses[25] = "WHY DO YOU TELL ME THAT YOU'VE %1?";
+        let responses[26] = "COULD YOU EXPLAIN WHY YOU WOULD %1?";
+        let responses[27] = "DO YOU THINK THERE IS %1?";
+        let responses[28] = "I SEE, YOUR %1.";
+        let responses[29] = "WE SHOULD BE DISCUSSING YOU, NOT ME.";
+        let responses[30] = "WHY DON'T YOU TELL ME THE REASON WHY %1?";
+        let responses[31] = "WHAT WOULD IT MEAN TO YOU IF YOU GOT %1?";
+        let responses[32] = "TELL ME MORE ABOUT YOUR MOTHER.";
+        let responses[33] = "TELL ME MORE ABOUT YOUR FATHER.";
+        let responses[34] = "DID YOU HAVE CLOSE FRIENDS AS A CHILD?";
+        let responses[35] = "WHY DO YOU ASK THAT?";
+        let responses[36] = "HELLO... I'M GLAD YOU COULD DROP BY TODAY.";
+        let responses[37] = "HI... I'M GLAD YOU COULD DROP BY TODAY.";
+        let responses[38] = "HEY... I'M GLAD YOU COULD DROP BY TODAY.";
+        let responses[39] = "PLEASE TELL ME MORE ABOUT IT.";
+
+        return this;
+    }
+
+    method Array getMatches() {
+        return matches;
+    }
+    method Array getKeys() {
+        return keys;
+    }
+    method Array getReflections() {
+        return reflections;
+    }
+    method Array getResponses() {
+        return responses;
+    }
+}

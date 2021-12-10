@@ -1,0 +1,143 @@
+class Strings {
+    function int index(String s, String sub) {
+        var int i, j, k, pos, len;
+        var boolean match;
+
+        let i = 0;
+        let pos = -1;
+        let len = s.length() - sub.length();
+        let match = false;
+
+        while (i < len) {
+            if (s.charAt(i) = sub.charAt(0)) {
+                let match = true;
+                let j = i + 1;
+                let k = i + sub.length();
+                
+                while (j < k) {
+                    if (~(s.charAt(j) = sub.charAt(j - i))) {
+                        let match = false;
+                        let j = k;
+                    } else {
+                        let j = j + 1;
+                    }
+                }
+                if (match) {
+                    let pos = i;
+                    let i = len;
+                }
+            }
+            let i = i + 1;
+        }
+
+        return pos;
+    }
+
+    function List split(int i, String s) {
+        var List words;
+        var String word;
+        var int j;
+
+        let j = i;
+        while (j < s.length()) {
+            if (s.charAt(j) = 32) {
+                let word = String.new(10);
+                while (i < j) {
+                    let word = word.appendChar(s.charAt(i));
+                    let i = i + 1;
+                }
+                if (words.length() = 0) {
+                    let words = List.new(word, null);
+                } else {
+                    let words = List.new(word, words);
+                }
+                let i = i + 1;
+            }
+            let j = j + 1;
+        }
+        let word = String.new(10);
+        while (i < j) {
+            let word =  word.appendChar(s.charAt(i));
+            let i = i + 1;
+        }
+        let words = words.append(word);
+
+        return words;
+    }
+
+    function String replace(String s, String old, String new) {
+        var String out;
+        var int i, j, pos, len;
+
+        let pos = Strings.index(s, old); 
+
+        if (pos = -1) {
+            return s;
+        }
+
+        let len = s.length() - old.length() + new.length();
+        let out = String.new(len);
+        let i = 0;
+        let j = pos + old.length();
+        
+        while (i < pos) {
+            let out = out.appendChar(s.charAt(i));
+            let i = i + 1;
+        }
+
+        let i = 0;
+        while (i < new.length()) {
+            let out = out.appendChar(new.charAt(i));
+            let i = i + 1;
+        }
+
+        while (j < s.length()) {
+            let out = out.appendChar(s.charAt(j));
+            let j = j + 1;
+        }
+
+        return out;
+    }
+
+    function boolean isSame(String s, String t) {
+        var int i;
+        let i = 0;
+        while (i < s.length()) {
+            if (i = t.length()) {
+                return false;
+            }
+            if (~(s.charAt(i) = t.charAt(i))) {
+                return false;
+            }
+            let i = i + 1;
+        }
+        if (i < (t.length() - 1)) {
+            return false;
+        } else {
+            return true;
+        }
+    }
+
+    function String join(List l) {
+        var int i, j, len;
+        var String s, el;
+
+        let len = l.length() * 10;
+        let s = String.new(len);
+        let i = 0;
+
+        while (i < l.length()) {
+            let j = 0;
+            let el = l.extract(i);
+            while (j < el.length()) {
+                let s = s.appendChar(el.charAt(j));
+                let j = j + 1;
+            }
+            let s = s.appendChar(32);
+            let i = i + 1;
+        }
+        do s.eraseLastChar();
+        
+        return s;
+    } 
+}

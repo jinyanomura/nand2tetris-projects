@@ -1,0 +1,29 @@
+class Main {
+    function void main() {
+        var Eliza e;
+        var String userInput;
+        var boolean isRunning;
+
+        let e = Eliza.new();
+        let isRunning = true;
+        do Eliza.printIntro();
+
+        while (isRunning) {
+            do Output.printString("-> ");
+            let userInput = String.new(30);
+            let userInput = Keyboard.readLine(userInput);
+
+            do Output.println();
+
+            if (~(Strings.isSame(userInput, "QUIT"))) {
+                do Eliza.printResponse(userInput);
+                do Output.println();
+            } else {
+                let isRunning = false;
+            }
+        }
+        do Output.printString("SEE YOU SOON.");
+
+        return;
+    }
+}

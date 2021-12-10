@@ -1,0 +1,76 @@
+class List {
+    field String content;
+    field List next;
+
+    constructor List new(String c, List n) {
+        let content = c; 
+        let next = n;
+        return this;
+    }
+
+    // Accessors
+    method int getContent() { return content; }
+    method int getNext() { return next; }
+
+    // length returns the total number of Lists.
+    method int length() {
+        var List current;
+        var int numEl;
+        let current = this;
+        let numEl = 0;
+
+        while (~(current = null)) {
+            let numEl = numEl + 1;
+            let current = current.getNext();
+        }
+
+        return numEl;
+    }
+
+    // extract returns the content of List at given index.
+    method String extract(int i) {
+        var List current;
+        var int n;
+        let current = this;
+        let n = current.length() - i - 1;
+
+        while (n > 0) {
+            let n = n - 1;
+            let current = current.getNext();
+        }
+
+        return current.getContent();
+    }
+
+    method List append(String el) {
+        var List current;
+        let current = this;
+        if (current.length() = 0) {
+            let current = List.new(el, null);
+        } else {
+            let current = List.new(el, current);
+        }
+        return current;
+    }
+
+    method void print() {
+        var List current;
+        let current = this;
+        while (~(current = null)) {
+            do Output.printString(current.getContent());
+            do Output.printChar(32);
+            let current = current.getNext();
+        }
+        return;
+    }
+
+    // dispose disposes this List by recursively disposing its tail.
+    method void dispose() {
+        if (~(next = null)) {
+            do next.dispose();
+        }
+        // Uses an OS routine to recycle this object.
+        do Memory.deAlloc(this);
+        return;
+    }
+}
