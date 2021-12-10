@@ -13,7 +13,6 @@ func main() {
 	// Parse the file given from command line.
 	flag.Parse()
 	path := flag.Arg(0)
-	c := analyzer.NewCompiler(path)
 	
 	// Opens the given directory or file and pass the contents to readFile.
 	var jack []byte
@@ -23,7 +22,8 @@ func main() {
 		if jack, err = os.ReadFile(path); err != nil {
 			log.Fatal(err)
 		}
-		c.Tokenize(jack)
+		c := analyzer.NewCompiler(jack)
+		c.Tokenize()
 		writeFile(path[:len(path) - 5], &c)
 	// if directory containing several .jack files
 	} else {
@@ -38,9 +38,12 @@ func main() {
 				if err != nil {
 					log.Fatal(err)
 				}
-				c.XML = ""
-				c.Tokenize(jack)
-				writeFile(fmt.Sprintf("%s/%s", path, fileName[:len(fileName) - 5]), &c)
+				c := analyzer.NewCompiler(jack)
+				c.Tokenize()
+				// writeFile(fmt.Sprintf("%s/%s", path, fileName[:len(fileName) - 5]), &c)
+				for _, el := range c.Tokenized {
+					fmt.Println(el)
+				}
 			}
 		}
 	}
