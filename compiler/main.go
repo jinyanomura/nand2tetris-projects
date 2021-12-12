@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"strings"
 )
 
 func main() {
@@ -40,23 +41,22 @@ func main() {
 				}
 				c := analyzer.NewCompiler(jack)
 				c.Tokenize()
-				// writeFile(fmt.Sprintf("%s/%s", path, fileName[:len(fileName) - 5]), &c)
-				for _, el := range c.Tokenized {
-					fmt.Println(el)
-				}
+				c.CompileClass()
+				writeFile(fmt.Sprintf("%s/%s", path, fileName[:len(fileName) - 5]), &c)
 			}
 		}
 	}
 }
 
 func writeFile(path string, c *analyzer.Code) {
-	xml, err := os.Create(fmt.Sprintf("%sT1.xml", path))
+	xml, err := os.Create(fmt.Sprintf("%sJ.xml", path))
 	if err != nil {
 		log.Fatal(err)
 	}
 	defer xml.Close()
 	fw := bufio.NewWriter(xml)
-	if _, err = fw.Write([]byte(c.XML)); err != nil {
+	x := strings.Join(c.XML, "\n")
+	if _, err = fw.Write([]byte(x)); err != nil {
 		log.Fatal(err)
 	}
 	if err = fw.Flush(); err != nil {

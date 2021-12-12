@@ -5,7 +5,7 @@ import "strconv"
 type Code struct {
 	Jack []byte
 	Tokenized []Token
-	XML string
+	XML []string
 }
 
 type Token struct {
@@ -34,6 +34,7 @@ func (c *Code) Tokenize() {
 			isComment = false
 		} else if apiComment && el == '*' && c.Jack[i+1] == '/' {
 			apiComment = false
+			i++
 		}
 	}
 }
@@ -104,6 +105,6 @@ func NewCompiler(jack []byte) Code {
 	return Code{
 		Jack: jack,
 		Tokenized: make([]Token, 0),
-		XML: "",
+		XML: make([]string, 0),
 	}
 }
