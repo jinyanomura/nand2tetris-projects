@@ -96,7 +96,7 @@ func isSymbol(b byte) bool {
 
 // isIntConst checks if given character represents an integer.
 func isIntConst(b byte) bool {
-	_, err := strconv.ParseInt(string(b), 10, 4)
+	_, err := strconv.ParseInt(string(b), 10, 0)
 	return err == nil
 }
 
