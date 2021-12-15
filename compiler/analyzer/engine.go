@@ -2,6 +2,8 @@ package analyzer
 
 import "fmt"
 
+var op = []string{"+", "-", "*", "/", "&", "|", "<", ">", "="}
+
 func (c *Code) CompileClass() {
 	var i int
 	var t Token
@@ -123,35 +125,70 @@ func (c *Code) compileStatements(i int) int {
 	return j - 1
 }
 
-// without handling term
 func (c *Code) compileExpression(i int, endSymbol string) int {
-	var j int
+	var j, numExpLayer int
 	var t Token
 
 	c.XML = append(c.XML, "<expression>")
 
-	c.XML = append(c.XML, "<term>")
-
+	out:
 	for j = i; j < len(c.Tokenized); j++ {
 		t = c.Tokenized[j]
-		if t.content == endSymbol {
-			break
-		} else if t.content == "," {
-			c.XML = append(c.XML, "</term>")
-			c.XML = append(c.XML, "</expression>")
-			c.appendTerminal(t)
-			c.XML = append(c.XML, "<expression>")
-			c.XML = append(c.XML, "<term>")
+		if numExpLayer == 0 {
+			switch {
+			case t.content == endSymbol:
+				c.compileTerm(i, j)
+				break out
+			case t.content == "(" || t.content == "[":
+				numExpLayer++
+			case isOp(t.content) && i != j:
+				c.compileTerm(i, j)
+				c.appendTerminal(t)
+				i = j + 1
+			}
 		} else {
-			c.appendTerminal(t)
+			switch t.content {
+			case "(", "[": numExpLayer++
+			case ")", "]": numExpLayer--
+			}
 		}
 	}
-
-	c.XML = append(c.XML, "</term>")
 
 	c.XML = append(c.XML, "</expression>")
 
 	return j - 1
+}
+
+func (c *Code) compileTerm(i, j int) int {
+	var t Token
+	var nt Token
+
+	c.XML = append(c.XML, "<term>")
+
+	for i < j {
+		t = c.Tokenized[i]
+		c.appendTerminal(t)
+		if t.start == "<identifier>" {
+			nt = c.Tokenized[i+1] 
+			switch nt.content {
+			case "[":
+				c.appendTerminal(nt)
+				i = c.compileExpression(i+2, "]")
+			case "(":
+				c.appendTerminal(nt)
+				i = c.compileExpressionList(i+2)
+			}
+		} else if t.content == "(" {
+			i = c.compileExpression(i+1, ")")
+		} else if t.content == "-" || t.content == "~" {
+			i = c.compileTerm(i+1, j)
+		}
+		i++
+	}
+
+	c.XML = append(c.XML, "</term>")
+
+	return i
 }
 
 func (c *Code) compileReturn(i int) int {
@@ -190,16 +227,42 @@ func (c *Code) compileDo(i int) int {
 		c.appendTerminal(t)
 		switch t.content {
 		case ";": break out
-		case "(":
-			c.XML = append(c.XML, "<expressionList>")
-			if c.Tokenized[j+1].content != ")" {
-				j = c.compileExpression(j+1, ")")
-			}
-			c.XML = append(c.XML, "</expressionList>")
+		case "(": j = c.compileExpressionList(j+1)
 		}
 	}
 
 	c.XML = append(c.XML, "</doStatement>")
+
+	return j
+}
+
+func (c *Code) compileExpressionList(i int) int {
+	var j int
+	var t Token
+
+	c.XML = append(c.XML, "<expressionList>")
+
+	if c.Tokenized[i].content != ")" {
+		out:
+		for j = i; j < len(c.Tokenized); j++ {
+			t = c.Tokenized[j]
+			switch t.content {
+			case ",":
+				j = c.compileExpression(i, ",") + 1
+				c.appendTerminal(t)
+				i = j + 1
+			case ")":
+				if c.Tokenized[j+1].content == ";" {
+					j = c.compileExpression(i, ")")
+					break out
+				}
+			}
+		}
+	} else {
+		j = i - 1
+	}
+
+	c.XML = append(c.XML, "</expressionList>")
 
 	return j
 }
@@ -314,4 +377,13 @@ func (c *Code) compileClassVarDec(i int) int {
 func (c *Code) appendTerminal(t Token) {
 	s := fmt.Sprintf("%s %s %s", t.start, t.content, t.end)
 	c.XML = append(c.XML, s)
+}
+
+func isOp(c string) bool {
+	for i := 0; i < len(op); i++ {
+		if c == op[i] {
+			return true
+		}
+	}
+	return false
 }
