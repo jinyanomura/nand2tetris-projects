@@ -1,11 +1,15 @@
 package analyzer
 
-import "strconv"
+import (
+	"compiler/symboltable"
+	"strconv"
+)
 
 type Code struct {
 	Jack []byte
 	Tokenized []Token
 	XML []string
+	ST symboltable.Table
 }
 
 type Token struct {
@@ -106,5 +110,6 @@ func NewCompiler(jack []byte) Code {
 		Jack: jack,
 		Tokenized: make([]Token, 0),
 		XML: make([]string, 0),
+		ST: *symboltable.New(),
 	}
 }

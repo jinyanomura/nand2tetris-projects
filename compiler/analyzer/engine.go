@@ -30,6 +30,8 @@ func (c *Code) compileSubroutine(i int) int {
 	var j int
 	var t Token
 
+	c.ST.Reset()
+
 	c.XML = append(c.XML, "<subroutineDec>")
 	for j = i; j < len(c.Tokenized); j++ {
 		t = c.Tokenized[j]
@@ -51,6 +53,8 @@ func (c *Code) compileParameterList(i int) int {
 	var j int
 	var t = c.Tokenized[i]
 
+	var Type string = ""
+
 	// append "("
 	c.appendTerminal(t)
 
@@ -61,6 +65,15 @@ func (c *Code) compileParameterList(i int) int {
 		if t.content == ")" {
 			break
 		} else {
+			if Type == "" {
+				Type = t.content
+			} else if t.content == "," {
+				Type = ""
+			} else {
+				c.ST.Define(t.content, Type, "arg")
+				tc := c.ST.Local[t.content]
+				t.content = fmt.Sprintf("Name: %s, Type: %s, Kind: %s, Index: %d, Usage: Declared", t.content, tc.Type, tc.Kind, tc.Index)
+			}
 			c.appendTerminal(t)
 		}
 	}
@@ -167,6 +180,16 @@ func (c *Code) compileTerm(i, j int) int {
 
 	for i < j {
 		t = c.Tokenized[i]
+
+		if t.start == "<identifier>" {
+			tc, ok := c.ST.Local[t.content]
+			if ok {
+				t.content = fmt.Sprintf("Name: %s, Type: %s, Kind: %s, Index: %d, Usage: Used", t.content, tc.Type, tc.Kind, tc.Index)
+			} else if tc, ok = c.ST.Global[t.content]; ok {
+				t.content = fmt.Sprintf("Name: %s, Type: %s, Kind: %s, Index: %d, Usage: Used", t.content, tc.Type, tc.Kind, tc.Index)
+			}
+		}
+
 		c.appendTerminal(t)
 		if t.start == "<identifier>" {
 			nt = c.Tokenized[i+1] 
@@ -321,6 +344,12 @@ func (c *Code) compileLet(i int) int {
 	// left part
 	for j = i; j < len(c.Tokenized); j++ {
 		t = c.Tokenized[j]
+		tc, ok := c.ST.Local[t.content]
+			if ok {
+				t.content = fmt.Sprintf("Name: %s, Type: %s, Kind: %s, Index: %d, Usage: Used", t.content, tc.Type, tc.Kind, tc.Index)
+			} else if tc, ok = c.ST.Global[t.content]; ok {
+				t.content = fmt.Sprintf("Name: %s, Type: %s, Kind: %s, Index: %d, Usage: Used", t.content, tc.Type, tc.Kind, tc.Index)
+			}
 		c.appendTerminal(t)
 		if t.content == "[" {
 			j = c.compileExpression(j+1, "]")
@@ -344,9 +373,20 @@ func (c *Code) compileVarDec(i int) int {
 	var j int
 	var t Token
 
+	var Kind, Type = "", ""
+
 	c.XML = append(c.XML, "<varDec>")
 	for j = i; j < len(c.Tokenized); j++ {
 		t = c.Tokenized[j]
+		if t.start == "<keyword>" && Kind == "" {
+			Kind = t.content
+			Type = c.Tokenized[j+1].content
+		}
+		if t.start == "<identifier>" && t.content != Type {
+			c.ST.Define(t.content, Type, Kind)
+			tc := c.ST.Local[t.content]
+			t.content = fmt.Sprintf("Name: %s, Type: %s, Kind: %s, Index: %d, Usage: Declared", t.content, tc.Type, tc.Kind, tc.Index)
+		}
 		c.appendTerminal(t)
 		if t.content == ";" {
 			break
@@ -360,10 +400,21 @@ func (c *Code) compileVarDec(i int) int {
 func (c *Code) compileClassVarDec(i int) int {
 	var j int
 	var t Token
+
+	var Kind, Type = "", ""
 	
 	c.XML = append(c.XML, "<classVarDec>")
 	for j = i; j < len(c.Tokenized); j++ {
 		t = c.Tokenized[j]
+		if t.start == "<keyword>" && Kind == "" {
+			Kind = t.content
+			Type = c.Tokenized[j+1].content
+		}
+		if t.start == "<identifier>" && t.content != Type {
+			c.ST.Define(t.content, Type, Kind)
+			tc := c.ST.Global[t.content]
+			t.content = fmt.Sprintf("Name: %s, Type: %s, Kind: %s, Index: %d, Usage: Declared", t.content, tc.Type, tc.Kind, tc.Index)
+		}
 		c.appendTerminal(t)
 		if t.content == ";" {
 			break
