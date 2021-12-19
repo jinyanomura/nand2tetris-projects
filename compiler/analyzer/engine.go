@@ -4,7 +4,7 @@ import "fmt"
 
 var op = []string{"+", "-", "*", "/", "&", "|", "<", ">", "="}
 
-func (c *Code) CompileClass() {
+func (c *Tokenizer) CompileClass() {
 	var i int
 	var t Token
 
@@ -12,8 +12,8 @@ func (c *Code) CompileClass() {
 
 	for i = 0; i < len(c.Tokenized); i++ {
 		t = c.Tokenized[i]
-		if t.start == "<keyword>" {
-			switch t.content {
+		if t.Key == "<keyword>" {
+			switch t.Content {
 			case "class": c.appendTerminal(t)
 			case "static", "field": i = c.compileClassVarDec(i)
 			case "function", "method", "constructor": i = c.compileSubroutine(i)
@@ -26,19 +26,17 @@ func (c *Code) CompileClass() {
 	c.XML = append(c.XML, "</class>")
 }
 
-func (c *Code) compileSubroutine(i int) int {
+func (c *Tokenizer) compileSubroutine(i int) int {
 	var j int
 	var t Token
-
-	c.ST.Reset()
 
 	c.XML = append(c.XML, "<subroutineDec>")
 	for j = i; j < len(c.Tokenized); j++ {
 		t = c.Tokenized[j]
-		if t.content == "{" {
+		if t.Content == "{" {
 			j = c.compileSubroutineBody(j)
 			break
-		} else if t.content == "(" {
+		} else if t.Content == "(" {
 			j = c.compileParameterList(j)
 		} else {
 			c.appendTerminal(t)
@@ -49,11 +47,9 @@ func (c *Code) compileSubroutine(i int) int {
 	return j
 }
 
-func (c *Code) compileParameterList(i int) int {
+func (c *Tokenizer) compileParameterList(i int) int {
 	var j int
 	var t = c.Tokenized[i]
-
-	var Type string = ""
 
 	// append "("
 	c.appendTerminal(t)
@@ -62,18 +58,9 @@ func (c *Code) compileParameterList(i int) int {
 
 	for j = i + 1; j < len(c.Tokenized); j++ {
 		t = c.Tokenized[j]
-		if t.content == ")" {
+		if t.Content == ")" {
 			break
 		} else {
-			if Type == "" {
-				Type = t.content
-			} else if t.content == "," {
-				Type = ""
-			} else {
-				c.ST.Define(t.content, Type, "arg")
-				tc := c.ST.Local[t.content]
-				t.content = fmt.Sprintf("Name: %s, Type: %s, Kind: %s, Index: %d, Usage: Declared", t.content, tc.Type, tc.Kind, tc.Index)
-			}
 			c.appendTerminal(t)
 		}
 	}
@@ -86,7 +73,7 @@ func (c *Code) compileParameterList(i int) int {
 	return j
 }
 
-func (c *Code) compileSubroutineBody(i int) int {
+func (c *Tokenizer) compileSubroutineBody(i int) int {
 	var j int
 	var t Token
 
@@ -97,11 +84,11 @@ func (c *Code) compileSubroutineBody(i int) int {
 
 	for j = i + 1; j < len(c.Tokenized); j++ {
 		t = c.Tokenized[j]
-		if t.content == "}" {
+		if t.Content == "}" {
 			c.appendTerminal(t)
 			break
-		} else if t.start == "<keyword>" {
-			switch t.content {
+		} else if t.Key == "<keyword>" {
+			switch t.Content {
 			case "var": j = c.compileVarDec(j)
 			case "let", "if", "while", "do", "return": j = c.compileStatements(j)
 			}
@@ -113,7 +100,7 @@ func (c *Code) compileSubroutineBody(i int) int {
 	return j
 }
 
-func (c *Code) compileStatements(i int) int {
+func (c *Tokenizer) compileStatements(i int) int {
 	var j int
 	var t Token
 
@@ -121,10 +108,10 @@ func (c *Code) compileStatements(i int) int {
 
 	for j = i; j < len(c.Tokenized); j++ {
 		t = c.Tokenized[j]
-		if t.content == "}" {
+		if t.Content == "}" {
 			break
 		}
-		switch t.content {
+		switch t.Content {
 		case "let": j = c.compileLet(j)
 		case "if": j = c.compileIf(j)
 		case "while": j = c.compileWhile(j)
@@ -138,7 +125,7 @@ func (c *Code) compileStatements(i int) int {
 	return j - 1
 }
 
-func (c *Code) compileExpression(i int, endSymbol string) int {
+func (c *Tokenizer) compileExpression(i int, endSymbol string) int {
 	var j, numExpLayer int
 	var t Token
 
@@ -149,18 +136,18 @@ func (c *Code) compileExpression(i int, endSymbol string) int {
 		t = c.Tokenized[j]
 		if numExpLayer == 0 {
 			switch {
-			case t.content == endSymbol:
+			case t.Content == endSymbol:
 				c.compileTerm(i, j)
 				break out
-			case t.content == "(" || t.content == "[":
+			case t.Content == "(" || t.Content == "[":
 				numExpLayer++
-			case isOp(t.content) && i != j:
+			case isOp(t.Content) && i != j:
 				c.compileTerm(i, j)
 				c.appendTerminal(t)
 				i = j + 1
 			}
 		} else {
-			switch t.content {
+			switch t.Content {
 			case "(", "[": numExpLayer++
 			case ")", "]": numExpLayer--
 			}
@@ -172,7 +159,7 @@ func (c *Code) compileExpression(i int, endSymbol string) int {
 	return j - 1
 }
 
-func (c *Code) compileTerm(i, j int) int {
+func (c *Tokenizer) compileTerm(i, j int) int {
 	var t Token
 	var nt Token
 
@@ -181,19 +168,10 @@ func (c *Code) compileTerm(i, j int) int {
 	for i < j {
 		t = c.Tokenized[i]
 
-		if t.start == "<identifier>" {
-			tc, ok := c.ST.Local[t.content]
-			if ok {
-				t.content = fmt.Sprintf("Name: %s, Type: %s, Kind: %s, Index: %d, Usage: Used", t.content, tc.Type, tc.Kind, tc.Index)
-			} else if tc, ok = c.ST.Global[t.content]; ok {
-				t.content = fmt.Sprintf("Name: %s, Type: %s, Kind: %s, Index: %d, Usage: Used", t.content, tc.Type, tc.Kind, tc.Index)
-			}
-		}
-
 		c.appendTerminal(t)
-		if t.start == "<identifier>" {
+		if t.Key == "<identifier>" {
 			nt = c.Tokenized[i+1] 
-			switch nt.content {
+			switch nt.Content {
 			case "[":
 				c.appendTerminal(nt)
 				i = c.compileExpression(i+2, "]")
@@ -201,9 +179,9 @@ func (c *Code) compileTerm(i, j int) int {
 				c.appendTerminal(nt)
 				i = c.compileExpressionList(i+2)
 			}
-		} else if t.content == "(" {
+		} else if t.Content == "(" {
 			i = c.compileExpression(i+1, ")")
-		} else if t.content == "-" || t.content == "~" {
+		} else if t.Content == "-" || t.Content == "~" {
 			i = c.compileTerm(i+1, j)
 		}
 		i++
@@ -214,7 +192,7 @@ func (c *Code) compileTerm(i, j int) int {
 	return i
 }
 
-func (c *Code) compileReturn(i int) int {
+func (c *Tokenizer) compileReturn(i int) int {
 	var j int
 	var t Token
 
@@ -225,7 +203,7 @@ func (c *Code) compileReturn(i int) int {
 	
 	for j = i + 1; j < len(c.Tokenized); j++ {
 		t = c.Tokenized[j]
-		if t.content == ";" {
+		if t.Content == ";" {
 			c.appendTerminal(t)
 			break
 		} else {
@@ -238,7 +216,7 @@ func (c *Code) compileReturn(i int) int {
 	return j
 }
 
-func (c *Code) compileDo(i int) int {
+func (c *Tokenizer) compileDo(i int) int {
 	var j int
 	var t Token
 
@@ -248,7 +226,7 @@ func (c *Code) compileDo(i int) int {
 	for j = i; j < len(c.Tokenized); j++ {
 		t = c.Tokenized[j]
 		c.appendTerminal(t)
-		switch t.content {
+		switch t.Content {
 		case ";": break out
 		case "(": j = c.compileExpressionList(j+1)
 		}
@@ -259,23 +237,23 @@ func (c *Code) compileDo(i int) int {
 	return j
 }
 
-func (c *Code) compileExpressionList(i int) int {
+func (c *Tokenizer) compileExpressionList(i int) int {
 	var j int
 	var t Token
 
 	c.XML = append(c.XML, "<expressionList>")
 
-	if c.Tokenized[i].content != ")" {
+	if c.Tokenized[i].Content != ")" {
 		out:
 		for j = i; j < len(c.Tokenized); j++ {
 			t = c.Tokenized[j]
-			switch t.content {
+			switch t.Content {
 			case ",":
 				j = c.compileExpression(i, ",") + 1
 				c.appendTerminal(t)
 				i = j + 1
 			case ")":
-				if c.Tokenized[j+1].content == ";" {
+				if c.Tokenized[j+1].Content == ";" {
 					j = c.compileExpression(i, ")")
 					break out
 				}
@@ -290,7 +268,7 @@ func (c *Code) compileExpressionList(i int) int {
 	return j
 }
 
-func (c *Code) compileWhile(i int) int {
+func (c *Tokenizer) compileWhile(i int) int {
 	var j int
 	var t Token
 
@@ -300,7 +278,7 @@ func (c *Code) compileWhile(i int) int {
 	for j = i; j < len(c.Tokenized); j++ {
 		t = c.Tokenized[j]
 		c.appendTerminal(t)
-		switch t.content {
+		switch t.Content {
 		case "}": break out
 		case "(": j = c.compileExpression(j+1, ")")
 		case "{": j = c.compileStatements(j+1)
@@ -312,7 +290,7 @@ func (c *Code) compileWhile(i int) int {
 	return j
 }
 
-func (c *Code) compileIf(i int) int {
+func (c *Tokenizer) compileIf(i int) int {
 	var j int
 	var t Token
 
@@ -321,10 +299,10 @@ func (c *Code) compileIf(i int) int {
 	for j = i; j < len(c.Tokenized); j++ {
 		t = c.Tokenized[j]
 		c.appendTerminal(t)
-		if t.content == "}" && c.Tokenized[j+1].content != "else" {
+		if t.Content == "}" && c.Tokenized[j+1].Content != "else" {
 			break
 		}
-		switch t.content {
+		switch t.Content {
 		case "(": j = c.compileExpression(j+1, ")")
 		case "{": j = c.compileStatements(j+1)
 		}
@@ -335,7 +313,7 @@ func (c *Code) compileIf(i int) int {
 	return j
 }
 
-func (c *Code) compileLet(i int) int {
+func (c *Tokenizer) compileLet(i int) int {
 	var j int
 	var t Token
 
@@ -344,16 +322,10 @@ func (c *Code) compileLet(i int) int {
 	// left part
 	for j = i; j < len(c.Tokenized); j++ {
 		t = c.Tokenized[j]
-		tc, ok := c.ST.Local[t.content]
-			if ok {
-				t.content = fmt.Sprintf("Name: %s, Type: %s, Kind: %s, Index: %d, Usage: Used", t.content, tc.Type, tc.Kind, tc.Index)
-			} else if tc, ok = c.ST.Global[t.content]; ok {
-				t.content = fmt.Sprintf("Name: %s, Type: %s, Kind: %s, Index: %d, Usage: Used", t.content, tc.Type, tc.Kind, tc.Index)
-			}
 		c.appendTerminal(t)
-		if t.content == "[" {
+		if t.Content == "[" {
 			j = c.compileExpression(j+1, "]")
-		} else if t.content == "=" {
+		} else if t.Content == "=" {
 			break
 		}
 	}
@@ -369,26 +341,15 @@ func (c *Code) compileLet(i int) int {
 	return j
 }
 
-func (c *Code) compileVarDec(i int) int {
+func (c *Tokenizer) compileVarDec(i int) int {
 	var j int
 	var t Token
-
-	var Kind, Type = "", ""
 
 	c.XML = append(c.XML, "<varDec>")
 	for j = i; j < len(c.Tokenized); j++ {
 		t = c.Tokenized[j]
-		if t.start == "<keyword>" && Kind == "" {
-			Kind = t.content
-			Type = c.Tokenized[j+1].content
-		}
-		if t.start == "<identifier>" && t.content != Type {
-			c.ST.Define(t.content, Type, Kind)
-			tc := c.ST.Local[t.content]
-			t.content = fmt.Sprintf("Name: %s, Type: %s, Kind: %s, Index: %d, Usage: Declared", t.content, tc.Type, tc.Kind, tc.Index)
-		}
 		c.appendTerminal(t)
-		if t.content == ";" {
+		if t.Content == ";" {
 			break
 		}
 	}
@@ -397,26 +358,15 @@ func (c *Code) compileVarDec(i int) int {
 	return j
 }
 
-func (c *Code) compileClassVarDec(i int) int {
+func (c *Tokenizer) compileClassVarDec(i int) int {
 	var j int
 	var t Token
-
-	var Kind, Type = "", ""
 	
 	c.XML = append(c.XML, "<classVarDec>")
 	for j = i; j < len(c.Tokenized); j++ {
 		t = c.Tokenized[j]
-		if t.start == "<keyword>" && Kind == "" {
-			Kind = t.content
-			Type = c.Tokenized[j+1].content
-		}
-		if t.start == "<identifier>" && t.content != Type {
-			c.ST.Define(t.content, Type, Kind)
-			tc := c.ST.Global[t.content]
-			t.content = fmt.Sprintf("Name: %s, Type: %s, Kind: %s, Index: %d, Usage: Declared", t.content, tc.Type, tc.Kind, tc.Index)
-		}
 		c.appendTerminal(t)
-		if t.content == ";" {
+		if t.Content == ";" {
 			break
 		}
 	}
@@ -425,8 +375,8 @@ func (c *Code) compileClassVarDec(i int) int {
 	return j
 }
 
-func (c *Code) appendTerminal(t Token) {
-	s := fmt.Sprintf("%s %s %s", t.start, t.content, t.end)
+func (c *Tokenizer) appendTerminal(t Token) {
+	s := fmt.Sprintf("%s %s %s", t.Key, t.Content, t.end)
 	c.XML = append(c.XML, s)
 }
 
