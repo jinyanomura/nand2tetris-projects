@@ -1,23 +1,21 @@
 package analyzer
 
 import (
-	"compiler/symboltable"
 	"strconv"
 )
 
-type Code struct {
+type Tokenizer struct {
 	Jack []byte
 	Tokenized []Token
 	XML []string
-	ST symboltable.Table
 }
 
 type Token struct {
-	start, content, end string
+	Key, Content, end string
 }
 
 // Tokenize organizes and transfers given .jack source code into .xml code.
-func (c *Code) Tokenize() {
+func (c *Tokenizer) Tokenize() {
 	var el byte
 	var isComment, apiComment = false, false
 	for i := 0; i < len(c.Jack); i++ {
@@ -44,12 +42,12 @@ func (c *Code) Tokenize() {
 }
 
 // regSymbol appends given symbol token.
-func (c *Code) regSymbol(s byte) {
-	c.Tokenized = append(c.Tokenized, Token{start: "<symbol>", content: string(s), end: "</symbol>"})
+func (c *Tokenizer) regSymbol(s byte) {
+	c.Tokenized = append(c.Tokenized, Token{Key: "<symbol>", Content: string(s), end: "</symbol>"})
 }
 
 // regIntConst reads .jack code and appends its integer constant starts from given index.
-func (c *Code) regIntConst(i int) int {
+func (c *Tokenizer) regIntConst(i int) int {
 	var j int
 	for j = i + 1; j < len(c.Jack); j++ {
 		_, err := strconv.ParseInt(string(c.Jack[j]), 10, 16)
@@ -57,24 +55,24 @@ func (c *Code) regIntConst(i int) int {
 			break
 		}
 	}
-	t := Token{start: "<integerConstant>", content: string(c.Jack[i:j]), end: "</integerConstant>"}
+	t := Token{Key: "<integerConstant>", Content: string(c.Jack[i:j]), end: "</integerConstant>"}
 	c.Tokenized = append(c.Tokenized, t)
 	return j - 1
 }
 
 // regStrConst reads .jack code and appends its string constant starts from given index.
-func (c *Code) regStrConst(i int) int {
+func (c *Tokenizer) regStrConst(i int) int {
 	var j = i
 	for j < len(c.Jack) && c.Jack[j] != '"' {
 		j++
 	}
-	t := Token{start: "<stringConstant>", content: string(c.Jack[i:j]), end: "</stringConstant>"}
+	t := Token{Key: "<stringConstant>", Content: string(c.Jack[i:j]), end: "</stringConstant>"}
 	c.Tokenized = append(c.Tokenized, t)
 	return j
 }
 
 // regKeyVar classifies a token starts from given index into Keyword or Identifier.
-func (c *Code) regKeyVar(i int) int {
+func (c *Tokenizer) regKeyVar(i int) int {
 	var j = i
 	for c.Jack[j] != ' ' && !isSymbol(c.Jack[j]) {
 		j++
@@ -82,7 +80,7 @@ func (c *Code) regKeyVar(i int) int {
 	word := string(c.Jack[i:j])
 	t, isKey := Keywords[word]
 	if !isKey {
-		t = Token{start: "<identifier>", content: word, end: "</identifier>"}
+		t = Token{Key: "<identifier>", Content: word, end: "</identifier>"}
 	}
 	c.Tokenized = append(c.Tokenized, t)	
 	return j - 1
@@ -105,11 +103,10 @@ func isIntConst(b byte) bool {
 }
 
 // NewCompiler initializes and returns Code struct with given .jack file.
-func NewCompiler(jack []byte) Code {
-	return Code{
-		Jack: jack,
+func New(jack []byte) Tokenizer {
+	return Tokenizer{
+		Jack:      jack,
 		Tokenized: make([]Token, 0),
-		XML: make([]string, 0),
-		ST: *symboltable.New(),
+		XML:       make([]string, 0),
 	}
 }
