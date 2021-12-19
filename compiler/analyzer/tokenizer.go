@@ -7,11 +7,36 @@ import (
 type Tokenizer struct {
 	Jack []byte
 	Tokenized []Token
-	XML []string
 }
 
 type Token struct {
-	Key, Content, end string
+	Key, Content string
+}
+
+var Symbols = []byte{'{', '}', '(', ')', '[', ']', '.', ',', ';', '+', '-', '*', '/', '&', '|', '<', '>', '=', '~'}
+
+var Keywords = map[string]Token{
+	"class":       {Key: "keyword", Content: "class"},
+	"constructor": {Key: "keyword", Content: "constructor"},
+	"function":    {Key: "keyword", Content: "function"},
+	"method":      {Key: "keyword", Content: "method"},
+	"field":       {Key: "keyword", Content: "field"},
+	"static":      {Key: "keyword", Content: "static"},
+	"var":         {Key: "keyword", Content: "var"},
+	"int":         {Key: "keyword", Content: "int"},
+	"char":        {Key: "keyword", Content: "char"},
+	"boolean":     {Key: "keyword", Content: "boolean"},
+	"void":        {Key: "keyword", Content: "void"},
+	"true":        {Key: "keyword", Content: "true"},
+	"false":       {Key: "keyword", Content: "false"},
+	"null":        {Key: "keyword", Content: "null"},
+	"this":        {Key: "keyword", Content: "this"},
+	"let":         {Key: "keyword", Content: "let"},
+	"do":          {Key: "keyword", Content: "do"},
+	"if":          {Key: "keyword", Content: "if"},
+	"else":        {Key: "keyword", Content: "else"},
+	"while":       {Key: "keyword", Content: "while"},
+	"return":      {Key: "keyword", Content: "return"},
 }
 
 // Tokenize organizes and transfers given .jack source code into .xml code.
@@ -43,7 +68,7 @@ func (c *Tokenizer) Tokenize() {
 
 // regSymbol appends given symbol token.
 func (c *Tokenizer) regSymbol(s byte) {
-	c.Tokenized = append(c.Tokenized, Token{Key: "<symbol>", Content: string(s), end: "</symbol>"})
+	c.Tokenized = append(c.Tokenized, Token{Key: "symbol", Content: string(s)})
 }
 
 // regIntConst reads .jack code and appends its integer constant starts from given index.
@@ -55,7 +80,7 @@ func (c *Tokenizer) regIntConst(i int) int {
 			break
 		}
 	}
-	t := Token{Key: "<integerConstant>", Content: string(c.Jack[i:j]), end: "</integerConstant>"}
+	t := Token{Key: "integerConstant", Content: string(c.Jack[i:j])}
 	c.Tokenized = append(c.Tokenized, t)
 	return j - 1
 }
@@ -66,7 +91,7 @@ func (c *Tokenizer) regStrConst(i int) int {
 	for j < len(c.Jack) && c.Jack[j] != '"' {
 		j++
 	}
-	t := Token{Key: "<stringConstant>", Content: string(c.Jack[i:j]), end: "</stringConstant>"}
+	t := Token{Key: "stringConstant", Content: string(c.Jack[i:j])}
 	c.Tokenized = append(c.Tokenized, t)
 	return j
 }
@@ -80,7 +105,7 @@ func (c *Tokenizer) regKeyVar(i int) int {
 	word := string(c.Jack[i:j])
 	t, isKey := Keywords[word]
 	if !isKey {
-		t = Token{Key: "<identifier>", Content: word, end: "</identifier>"}
+		t = Token{Key: "identifier", Content: word}
 	}
 	c.Tokenized = append(c.Tokenized, t)	
 	return j - 1
@@ -102,11 +127,10 @@ func isIntConst(b byte) bool {
 	return err == nil
 }
 
-// NewCompiler initializes and returns Code struct with given .jack file.
+// New initializes and returns Tokenizer struct with given .jack file.
 func New(jack []byte) Tokenizer {
 	return Tokenizer{
 		Jack:      jack,
 		Tokenized: make([]Token, 0),
-		XML:       make([]string, 0),
 	}
 }
