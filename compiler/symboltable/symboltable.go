@@ -33,11 +33,11 @@ func (t *Table) Define(name, varType, kind string) {
 		entry.Index = t.Count.Static
 		t.Global[name] = entry
 		t.Count.Static++
-	case "arg":
+	case "argument":
 		entry.Index = t.Count.Arg
 		t.Local[name] = entry
 		t.Count.Arg++
-	case "var":
+	case "local":
 		entry.Index = t.Count.Var
 		t.Local[name] = entry
 		t.Count.Var++

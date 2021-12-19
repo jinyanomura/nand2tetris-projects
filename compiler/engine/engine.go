@@ -5,6 +5,7 @@ import (
 	"compiler/symboltable"
 	"compiler/writer"
 	"fmt"
+	"log"
 	"strconv"
 )
 
@@ -16,6 +17,7 @@ type Engine struct {
 	Index          int
 	ClassName      string
 	SubroutineName string
+	LabelCount     int
 }
 
 var opcode = []string{"+", "-", "*", "/", "&", "|", "<", ">", "="}
@@ -35,7 +37,7 @@ func (e *Engine) CompileExpressionList() int {
 }
 
 func (e *Engine) CompileTerm() {
-	if e.Current.Key == "<identifier>" {
+	if e.Current.Key == "identifier" {
 		name := e.Current.Content
 		nt := e.Tokenizer.Tokenized[e.Index + 1]
 		switch nt.Content {
@@ -57,15 +59,29 @@ func (e *Engine) CompileTerm() {
 	} else if e.Current.Content == "(" {
 		e.CompileExpression()
 	} else if e.Current.Content == "-" || e.Current.Content == "~" {
-		// compilation for unary term
+		op := e.Current.Content
+		e.Forward(1)
+		e.CompileTerm()
+		if op == "-" {
+			op = "neg"
+		}
+		e.WriteArithmetic(op)
 	} else {
-		// compilation for constants
 		switch e.Current.Key {
-		case "<integerConstant>":
+		case "integerConstant":
 			i, _ := strconv.Atoi(e.Current.Content)
 			e.WritePush("constant", i)
-		case "<stringConstant>":
-		case "<keywordConstant>":
+		case "keyword":
+			switch e.Current.Content {
+			case "true":
+				e.WritePush("constant", 0)
+				e.WriteArithmetic("~")
+			case "false":
+				e.WritePush("constant", 0)
+			case "null":
+			case "this":
+			}
+		case "stringConstant":
 		}
 	}
 }
@@ -87,9 +103,7 @@ func (e *Engine) CompileExpression() {
 }
 
 func (e *Engine) CompileReturn() {
-	e.Forward(1)
-
-	if e.Current.Content == ";" {
+	if e.NextToken().Content == ";" {
 		e.WritePush("constant", 0)
 	} else {
 		e.CompileExpression()
@@ -109,29 +123,130 @@ func (e *Engine) CompileDo() {
 }
 
 func (e *Engine) CompileWhile() {
+	// create 2 labels and increment LabelCount by 1
+	l1 := fmt.Sprintf("WHILE_EXP_%d", e.LabelCount)
+	l2 := fmt.Sprintf("WHILE_END_%d", e.LabelCount)
+	e.LabelCount++
 
+	// write label L1
+	e.WriteLabel(l1)
+
+	// evaluate expression, and reverse the result
+	e.Forward(1)
+	e.CompileExpression()
+	e.WriteArithmetic("~")
+
+	// write if-goto L2 and increment LabelCount by 1
+	e.WriteIf(l2)
+
+	// compile statements
+	e.Forward(1)
+	if e.Current.Content != "{" {
+		log.Fatal("While statements must start with '{'.")
+	} else {
+		e.Forward(1)
+		e.CompileStatements()
+	}
+
+	// write goto L1
+	e.WriteGoto(l1)
+
+	// write label L2
+	e.WriteLabel(l2)
 }
 
 func (e *Engine) CompileIf() {
+	// create 2 labels and increment LabelCount by 1
+	l1 := fmt.Sprintf("IF_FALSE_%d", e.LabelCount)
+	l2 := fmt.Sprintf("IF_TRUE_%d", e.LabelCount)
+	e.LabelCount++
 
+	// evaluate expression and reverse the result
+	e.Forward(1)
+	e.CompileExpression()
+	e.WriteArithmetic("~")
+
+	// write if-goto L1.
+	e.WriteIf(l1)
+
+	// compile statements
+	e.Forward(1)
+	if e.Current.Content != "{" {
+		log.Fatal("If statements must start with '{'.")
+	} else {
+		e.Forward(1)
+		e.CompileStatements()
+	}
+
+	// write goto L2
+	e.WriteGoto(l2)
+
+	// write label L1
+	e.WriteLabel(l1)
+
+	// compile statements if 'else' keyword is found
+	if e.NextToken().Content == "else" {
+		e.Forward(2)
+		if e.Current.Content != "{" {
+			log.Fatal("Else statements must start with '{'.")
+		} else {
+			e.Forward(1)
+			e.CompileStatements()
+		}
+	}
+
+	// write label L2
+	e.WriteLabel(l2)
 }
 
 func (e *Engine) CompileLet() {
+	// save variable name
+	e.Forward(1)
+	varName := e.Current.Content
 
+	e.Forward(1)
+	if e.Current.Content != "=" {
+		// should handle array element here.
+	} else {
+		e.CompileExpression()
+	}
+
+	s, ok := e.Table.Local[varName]
+	if !ok {
+		s, ok = e.Table.Global[varName]
+		if !ok {
+			log.Fatal("Variable not found in both local and global symbol tables.")
+		}
+	}
+	
+	e.WritePop(s.Kind, s.Index)
 }
 
 func (e *Engine) CompileStatements() {
-	switch e.Current.Content {
-	case "let":
-	case "if":
-	case "while":
-	case "do": e.CompileDo()
-	case "return": e.CompileReturn()
+	for e.Current.Content != "}" {
+		switch e.Current.Content {
+		case "let": e.CompileLet()
+		case "if": e.CompileIf()
+		case "while": e.CompileWhile()
+		case "do": e.CompileDo()
+		case "return": e.CompileReturn()
+		}
+		e.Forward(1)
 	}
 }
 
 func (e *Engine) CompileVarDec() {
+	e.Forward(1)
+	varType := e.Current.Content
 
+	e.Forward(1)
+	for e.Current.Content != ";" {
+		e.Table.Define(e.Current.Content, varType, "local")
+		e.Forward(1)
+		if e.Current.Content == "," {
+			e.Forward(1)
+		}
+	}
 }
 
 func (e *Engine) CompileSubroutineBody() {
@@ -147,10 +262,7 @@ func (e *Engine) CompileSubroutineBody() {
 	e.WriteFunction(e.SubroutineName, e.Table.Count.Var)
 
 	// compile statements.
-	for e.Current.Content != "}" {
-		e.CompileStatements()
-		e.Forward(1)
-	}
+	e.CompileStatements()
 }
 
 func (e *Engine) CompileParameterList() {
@@ -164,7 +276,7 @@ func (e *Engine) CompileParameterList() {
 		} else if c == "," {
 			argType = ""
 		} else {
-			e.Table.Define(c, argType, "arg")
+			e.Table.Define(c, argType, "argument")
 		}
 		e.Forward(1)
 	}
@@ -241,11 +353,13 @@ func isOp(t analyzer.Token) bool {
 // New initializes and returns a new instance of Engine struct.
 func New(c *analyzer.Tokenizer) *Engine {
 	return &Engine{
-		Tokenizer: c,
-		Table:     symboltable.New(),
-		Writer:    writer.New(),
-		Current:   c.Tokenized[3],
-		Index:     3,
-		ClassName: c.Tokenized[1].Content,
+		Tokenizer:      c,
+		Table:          symboltable.New(),
+		Writer:         writer.New(),
+		Current:        c.Tokenized[3],
+		Index:          3,
+		ClassName:      c.Tokenized[1].Content,
+		SubroutineName: "",
+		LabelCount:     0,
 	}
 }

@@ -14,7 +14,7 @@ func main() {
 	// Parse the file given from command line.
 	// flag.Parse()
 	// path := flag.Arg(0)
-	path := "../../projects/11/Seven"
+	path := "../../projects/11/ConvertToBin"
 	
 	// Opens the given directory or file and pass the contents to readFile.
 	var jack []byte
@@ -57,7 +57,7 @@ func main() {
 }
 
 func writeFile(path string, code []string) {
-	vm, err := os.Create(fmt.Sprintf("%sJ.vm", path))
+	vm, err := os.Create(fmt.Sprintf("%s.vm", path))
 	if err != nil {
 		log.Fatal(err)
 	}

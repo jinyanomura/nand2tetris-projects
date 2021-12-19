@@ -4,18 +4,18 @@ import "fmt"
 
 type Writer struct {
 	VM          []string
-	LabelNumber int
 }
 
 var command = map[string]string{
-	"+": "add",
-	"-": "sub",
-	"=": "eq",
-	">": "gt",
-	"<": "lt",
-	"&": "and",
-	"|": "or",
-	"~": "not",
+	"+":   "add",
+	"-":   "sub",
+	"=":   "eq",
+	">":   "gt",
+	"<":   "lt",
+	"&":   "and",
+	"|":   "or",
+	"~":   "not",
+	"neg": "neg",
 }
 
 // WritePush writes a VM push function.
@@ -35,24 +35,25 @@ func (w *Writer) WriteArithmetic(cmd string) {
 		w.VM = append(w.VM, c)
 	} else {
 		switch cmd {
-		case "neg": // unary negation command.
 		case "*":
 			w.VM = append(w.VM, "call Math.multiply 2")
-		case "/": // should call Math.devide function
+		case "/":
+			w.VM = append(w.VM, "call Math.divide 2")
 		}
 	}
 }
 
+// WriteLabel writes labels with given unique label name.
 func (w *Writer) WriteLabel(label string) {
-
+	w.VM = append(w.VM, fmt.Sprintf("label %s", label))
 }
 
 func (w *Writer) WriteGoto(label string) {
-
+	w.VM = append(w.VM, fmt.Sprintf("goto %s", label))
 }
 
 func (w *Writer) WriteIf(label string) {
-
+	w.VM = append(w.VM, fmt.Sprintf("if-goto %s", label))
 }
 
 // WriteCall writes a VM call command.
@@ -73,6 +74,5 @@ func (w *Writer) WriteReturn() {
 func New() *Writer {
 	return &Writer{
 		VM: make([]string, 0),
-		LabelNumber: 0,
 	}
 }
