@@ -14,7 +14,7 @@ func main() {
 	// Parse the file given from command line.
 	// flag.Parse()
 	// path := flag.Arg(0)
-	path := "../../projects/11/ConvertToBin"
+	path := "../../projects/11/Square"
 	
 	// Opens the given directory or file and pass the contents to readFile.
 	var jack []byte

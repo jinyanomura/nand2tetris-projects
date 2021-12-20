@@ -24,6 +24,7 @@ var opcode = []string{"+", "-", "*", "/", "&", "|", "<", ">", "="}
 
 func (e *Engine) CompileExpressionList() int {
 	if e.NextToken().Content == ")" {
+		e.Forward(1)
 		return 0
 	}
 
@@ -44,12 +45,23 @@ func (e *Engine) CompileTerm() {
 		case "[":
 			// compilation for an array element
 		case "(":
-			e.WriteCall(name, e.CompileExpressionList())
+			e.Forward(1)
+			name = fmt.Sprintf("%s.%s", e.ClassName, name)
+			e.WritePush("pointer", 0)
+			e.WriteCall(name, e.CompileExpressionList() + 1)
 		case ".":
 			e.Forward(2)
-			name = fmt.Sprintf("%s.%s", name, e.Current.Content)
-			e.Forward(1)
-			e.WriteCall(name, e.CompileExpressionList())
+			// if method call
+			if e.IndexOf(name) > -1 {
+				e.WritePush(e.KindOf(name), e.IndexOf(name))
+				name = fmt.Sprintf("%s.%s", e.TypeOf(name), e.Current.Content)
+				e.Forward(1)
+				e.WriteCall(name, e.CompileExpressionList() + 1)
+			} else {
+				name = fmt.Sprintf("%s.%s", name, e.Current.Content)
+				e.Forward(1)
+				e.WriteCall(name, e.CompileExpressionList())
+			}
 		default:
 			kind, index := e.Table.KindOf(e.Current.Content), e.Table.IndexOf(e.Current.Content)
 			if index > -1 {
@@ -78,8 +90,9 @@ func (e *Engine) CompileTerm() {
 				e.WriteArithmetic("~")
 			case "false":
 				e.WritePush("constant", 0)
-			case "null":
 			case "this":
+				e.WritePush("pointer", 0)
+			case "null":
 			}
 		case "stringConstant":
 		}
@@ -105,6 +118,7 @@ func (e *Engine) CompileExpression() {
 func (e *Engine) CompileReturn() {
 	if e.NextToken().Content == ";" {
 		e.WritePush("constant", 0)
+		e.Forward(1)
 	} else {
 		e.CompileExpression()
 	}
@@ -118,7 +132,7 @@ func (e *Engine) CompileDo() {
 	if e.Current.Content == ";" {
 		e.WritePop("temp", 0)
 	} else {
-		fmt.Println("Do statement must end with ';'.")
+		log.Fatal("Do statement must end with ';'.")
 	}
 }
 
@@ -220,6 +234,10 @@ func (e *Engine) CompileLet() {
 	}
 	
 	e.WritePop(s.Kind, s.Index)
+
+	if e.Current.Content != ";" {
+		log.Fatal("let statement must end with ';'.")
+	}
 }
 
 func (e *Engine) CompileStatements() {
@@ -241,7 +259,7 @@ func (e *Engine) CompileVarDec() {
 
 	e.Forward(1)
 	for e.Current.Content != ";" {
-		e.Table.Define(e.Current.Content, varType, "local")
+		e.Table.Define(e.Current.Content, varType, "var")
 		e.Forward(1)
 		if e.Current.Content == "," {
 			e.Forward(1)
@@ -249,7 +267,7 @@ func (e *Engine) CompileVarDec() {
 	}
 }
 
-func (e *Engine) CompileSubroutineBody() {
+func (e *Engine) CompileSubroutineBody(funcType string) {
 	e.Forward(1)
 
 	// compile var declaration.
@@ -259,15 +277,31 @@ func (e *Engine) CompileSubroutineBody() {
 	}
 
 	// write function code with total number of local variables.
-	e.WriteFunction(e.SubroutineName, e.Table.Count.Var)
+	e.WriteFunction(e.SubroutineName, e.Count.Var)
+
+	// do object manipulation if funcType is either 'method' or 'constructor'
+	switch funcType {
+	case "method":
+		e.WritePush("argument", 0)
+		e.WritePop("pointer", 0)
+	case "constructor":
+		e.WritePush("constant", e.Count.Field)
+		e.WriteCall("Memory.alloc", 1)
+		e.WritePop("pointer", 0)
+	}
 
 	// compile statements.
 	e.CompileStatements()
 }
 
-func (e *Engine) CompileParameterList() {
+func (e *Engine) CompileParameterList(funcType string) {
 	e.Forward(1)
 	argType, c := "", ""
+
+	// set 'this' as first argument to symbol table if funcType is 'method'
+	if funcType == "method" {
+		e.Table.Define("this", e.ClassName, "argument")
+	}
 
 	for e.Current.Content != ")" {
 		c = e.Current.Content
@@ -283,33 +317,38 @@ func (e *Engine) CompileParameterList() {
 }
 
 func (e *Engine) CompileSubroutine() {
+	// save the type of function(function, constructor, method)
+	funcType := e.Current.Content
+
+	// reset the local symbol table
 	e.Table.Reset()
 
-	switch e.Current.Content {
-	case "function":
-		e.Forward(2)
-		e.SubroutineName = fmt.Sprintf("%s.%s", e.ClassName, e.Current.Content)
-		e.Forward(1)
-		e.CompileParameterList()
-	case "constructor":
-	case "method":
-	}
+	// write function and its arguments declaration
+	e.Forward(2)
+	e.SubroutineName = fmt.Sprintf("%s.%s", e.ClassName, e.Current.Content)
+	e.Forward(1)
+	e.CompileParameterList(funcType)
 
+	// compile subroutine body
 	e.Forward(1)
 	if e.Current.Content == "{" {
-		e.CompileSubroutineBody()
+		e.CompileSubroutineBody(funcType)
 	} else {
-		fmt.Println("Subroutine body must start with '{'.")
+		log.Fatal("Subroutine body must start with '{'.")
 	}
 }
 
 // CompileClassVarDec registers declared variables to Global symbol map.
 func (e *Engine) CompileClassVarDec() {
+	// stores kind(field, static) in k
 	k := e.Current.Content
 
 	e.Forward(1)
+	
+	// stores variable type in t
 	t := e.Current.Content
 
+	e.Forward(1)
 	for e.Current.Content != ";" {
 		if e.Current.Key == "identifier" {
 			e.Table.Define(e.Current.Content, t, k)
@@ -337,7 +376,7 @@ func (e *Engine) NextToken() analyzer.Token {
 // Forward progresses the current token and its index for given number.
 func (e *Engine) Forward(i int) {
 	e.Index += i
-	e.Current = e.Tokenizer.Tokenized[e.Index]
+	e.Current = e.Tokenized[e.Index]
 }
 
 // isOp checks if the content of given token is an opcode.

@@ -26,6 +26,7 @@ func (t *Table) Define(name, varType, kind string) {
 
 	switch kind {
 	case "field":
+		entry.Kind = "this"
 		entry.Index = t.Count.Field
 		t.Global[name] = entry
 		t.Count.Field++
@@ -37,7 +38,8 @@ func (t *Table) Define(name, varType, kind string) {
 		entry.Index = t.Count.Arg
 		t.Local[name] = entry
 		t.Count.Arg++
-	case "local":
+	case "var":
+		entry.Kind = "local"
 		entry.Index = t.Count.Var
 		t.Local[name] = entry
 		t.Count.Var++
