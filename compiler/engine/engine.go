@@ -43,7 +43,12 @@ func (e *Engine) CompileTerm() {
 		nt := e.Tokenizer.Tokenized[e.Index + 1]
 		switch nt.Content {
 		case "[":
-			// compilation for an array element
+			e.WritePush(e.KindOf(e.Current.Content), e.IndexOf(e.Current.Content))
+			e.Forward(1)
+			e.CompileExpression()
+			e.WriteArithmetic("+")
+			e.WritePop("pointer", 1)
+			e.WritePush("that", 0)
 		case "(":
 			e.Forward(1)
 			name = fmt.Sprintf("%s.%s", e.ClassName, name)
@@ -95,6 +100,12 @@ func (e *Engine) CompileTerm() {
 			case "null":
 			}
 		case "stringConstant":
+			e.WritePush("constant", len(e.Current.Content))
+			e.WriteCall("String.new", 1)
+			for _, char := range e.Current.Content {
+				e.WritePush("constant", int(char))
+				e.WriteCall("String.appendChar", 2)
+			}
 		}
 	}
 }
@@ -219,21 +230,26 @@ func (e *Engine) CompileLet() {
 	varName := e.Current.Content
 
 	e.Forward(1)
-	if e.Current.Content != "=" {
-		// should handle array element here.
-	} else {
+	switch e.Current.Content {
+	case "=":
 		e.CompileExpression()
-	}
-
-	s, ok := e.Table.Local[varName]
-	if !ok {
-		s, ok = e.Table.Global[varName]
-		if !ok {
-			log.Fatal("Variable not found in both local and global symbol tables.")
+		e.WritePop(e.KindOf(varName), e.IndexOf(varName))
+	case "[":
+		e.WritePush(e.KindOf(varName), e.IndexOf(varName))
+		e.CompileExpression()
+		e.WriteArithmetic("+")
+		e.Forward(1)
+		if e.Current.Content != "=" {
+			log.Fatal(fmt.Sprintf("Expected '=' but found %s.", e.Current.Content))
 		}
+		e.CompileExpression()
+		e.WritePop("temp", 0)
+		e.WritePop("pointer", 1)
+		e.WritePush("temp", 0)
+		e.WritePop("that", 0)
+	default:
+		log.Fatal(fmt.Sprintf("Expected '=' or '[' but found %s.", e.Current.Content))
 	}
-	
-	e.WritePop(s.Kind, s.Index)
 
 	if e.Current.Content != ";" {
 		log.Fatal("let statement must end with ';'.")
