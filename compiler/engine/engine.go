@@ -22,6 +22,7 @@ type Engine struct {
 
 var opcode = []string{"+", "-", "*", "/", "&", "|", "<", ">", "="}
 
+// CompileExpressionList compiles arguments of subroutine calls, and returns its number.
 func (e *Engine) CompileExpressionList() int {
 	if e.NextToken().Content == ")" {
 		e.Forward(1)
@@ -37,6 +38,7 @@ func (e *Engine) CompileExpressionList() int {
 	return numExp
 }
 
+// CompileTerm compiles terms.
 func (e *Engine) CompileTerm() {
 	if e.Current.Key == "identifier" {
 		name := e.Current.Content
@@ -93,11 +95,10 @@ func (e *Engine) CompileTerm() {
 			case "true":
 				e.WritePush("constant", 0)
 				e.WriteArithmetic("~")
-			case "false":
+			case "false", "null":
 				e.WritePush("constant", 0)
 			case "this":
 				e.WritePush("pointer", 0)
-			case "null":
 			}
 		case "stringConstant":
 			e.WritePush("constant", len(e.Current.Content))
@@ -110,6 +111,7 @@ func (e *Engine) CompileTerm() {
 	}
 }
 
+// CmpileExpression compiles expressions.
 func (e *Engine) CompileExpression() {
 	// compile the first term
 	e.Forward(1)
@@ -126,6 +128,7 @@ func (e *Engine) CompileExpression() {
 	}
 }
 
+// CompileReturn compiles return statements.
 func (e *Engine) CompileReturn() {
 	if e.NextToken().Content == ";" {
 		e.WritePush("constant", 0)
@@ -147,6 +150,7 @@ func (e *Engine) CompileDo() {
 	}
 }
 
+// CompileWhile compiles while statements.
 func (e *Engine) CompileWhile() {
 	// create 2 labels and increment LabelCount by 1
 	l1 := fmt.Sprintf("WHILE_EXP_%d", e.LabelCount)
@@ -180,6 +184,7 @@ func (e *Engine) CompileWhile() {
 	e.WriteLabel(l2)
 }
 
+// CompileIf compiles if statements.
 func (e *Engine) CompileIf() {
 	// create 2 labels and increment LabelCount by 1
 	l1 := fmt.Sprintf("IF_FALSE_%d", e.LabelCount)
@@ -224,6 +229,7 @@ func (e *Engine) CompileIf() {
 	e.WriteLabel(l2)
 }
 
+// CompileLet compiles let statements.
 func (e *Engine) CompileLet() {
 	// save variable name
 	e.Forward(1)
@@ -256,6 +262,7 @@ func (e *Engine) CompileLet() {
 	}
 }
 
+// CompileStatements progresses compiling body of subroutines and if/while statements.
 func (e *Engine) CompileStatements() {
 	for e.Current.Content != "}" {
 		switch e.Current.Content {
@@ -269,6 +276,7 @@ func (e *Engine) CompileStatements() {
 	}
 }
 
+// CompileVarDec registers local variables declared in subroutines to symbol table.
 func (e *Engine) CompileVarDec() {
 	e.Forward(1)
 	varType := e.Current.Content
@@ -283,6 +291,7 @@ func (e *Engine) CompileVarDec() {
 	}
 }
 
+// CompileSubroutineBody compiles body of subroutines.
 func (e *Engine) CompileSubroutineBody(funcType string) {
 	e.Forward(1)
 
@@ -310,6 +319,7 @@ func (e *Engine) CompileSubroutineBody(funcType string) {
 	e.CompileStatements()
 }
 
+// CompileParameterList registers arguments to symbol table.
 func (e *Engine) CompileParameterList(funcType string) {
 	e.Forward(1)
 	argType, c := "", ""
@@ -332,6 +342,7 @@ func (e *Engine) CompileParameterList(funcType string) {
 	}
 }
 
+// CompileSubroutine compiles subroutines(constructor, method, and function).
 func (e *Engine) CompileSubroutine() {
 	// save the type of function(function, constructor, method)
 	funcType := e.Current.Content

@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"compiler/analyzer"
 	"compiler/engine"
+	"flag"
 	"fmt"
 	"log"
 	"os"
@@ -12,9 +13,8 @@ import (
 
 func main() {
 	// Parse the file given from command line.
-	// flag.Parse()
-	// path := flag.Arg(0)
-	path := "../../projects/11/Square"
+	flag.Parse()
+	path := flag.Arg(0)
 	
 	// Opens the given directory or file and pass the contents to readFile.
 	var jack []byte
@@ -24,9 +24,9 @@ func main() {
 		if jack, err = os.ReadFile(path); err != nil {
 			log.Fatal(err)
 		}
-		c := analyzer.New(jack)
-		c.Tokenize()
-		e := engine.New(&c)
+		a := analyzer.New(jack)
+		a.Tokenize()
+		e := engine.New(&a)
 		e.CompileClass()
 		writeFile(path[:len(path) - 5], e.VM)
 	// if directory containing several .jack files
@@ -43,11 +43,11 @@ func main() {
 					log.Fatal(err)
 				}
 				// tokenize
-				c := analyzer.New(jack)
-				c.Tokenize()
+				a := analyzer.New(jack)
+				a.Tokenize()
 
 				// compile
-				e := engine.New(&c)
+				e := engine.New(&a)
 				e.CompileClass()
 
 				writeFile(fmt.Sprintf("%s/%s", path, fileName[:len(fileName) - 5]), e.VM)
