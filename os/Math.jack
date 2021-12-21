@@ -1,0 +1,30 @@
+class Math {
+
+    // init initializes the library.
+    function void init() {
+    }
+
+    // abs returns the absolute value of x.
+    function int abs(int x) {
+    }
+
+    // multiply returns the product of x and y 
+    function int multiply(int x, int y) {
+    }
+
+    // divide returns the quotient of x and y.
+    function int divide(int x, int y) {
+    }
+
+    // sqrt returns the integer part of the square root of x.
+    function int sqrt(int x) {
+    }
+
+    // max compares a and b, then returns the greater number.
+    function int max(int a, int b) {
+    }
+
+    // min compares a and b, then returns the smaller number.
+    function int min(int a, int b) {
+    }
+}
