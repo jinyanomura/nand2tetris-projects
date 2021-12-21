@@ -416,14 +416,14 @@ func isOp(t analyzer.Token) bool {
 }
 
 // New initializes and returns a new instance of Engine struct.
-func New(c *analyzer.Tokenizer) *Engine {
+func New(t *analyzer.Tokenizer) *Engine {
 	return &Engine{
-		Tokenizer:      c,
+		Tokenizer:      t,
 		Table:          symboltable.New(),
 		Writer:         writer.New(),
-		Current:        c.Tokenized[3],
+		Current:        t.Tokenized[3],
 		Index:          3,
-		ClassName:      c.Tokenized[1].Content,
+		ClassName:      t.Tokenized[1].Content,
 		SubroutineName: "",
 		LabelCount:     0,
 	}
