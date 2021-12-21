@@ -378,6 +378,8 @@ func (e *Engine) CompileClassVarDec() {
 	for e.Current.Content != ";" {
 		if e.Current.Key == "identifier" {
 			e.Table.Define(e.Current.Content, t, k)
+		} else if e.Current.Content != "," {
+			log.Fatal("Error declaring class variables.")
 		}
 		e.Forward(1)
 	}
