@@ -1,10 +1,10 @@
 package engine
 
 import (
-	"compiler/analyzer"
-	"compiler/symboltable"
-	"compiler/writer"
 	"fmt"
+	"jackcompiler/analyzer"
+	"jackcompiler/symboltable"
+	"jackcompiler/writer"
 	"log"
 	"strconv"
 )
@@ -42,8 +42,7 @@ func (e *Engine) CompileExpressionList() int {
 func (e *Engine) CompileTerm() {
 	if e.Current.Key == "identifier" {
 		name := e.Current.Content
-		nt := e.Tokenizer.Tokenized[e.Index + 1]
-		switch nt.Content {
+		switch e.NextToken().Content {
 		case "[":
 			e.WritePush(e.KindOf(e.Current.Content), e.IndexOf(e.Current.Content))
 			e.Forward(1)

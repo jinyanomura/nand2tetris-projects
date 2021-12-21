@@ -2,10 +2,10 @@ package main
 
 import (
 	"bufio"
-	"compiler/analyzer"
-	"compiler/engine"
 	"flag"
 	"fmt"
+	"jackcompiler/analyzer"
+	"jackcompiler/engine"
 	"log"
 	"os"
 	"strings"
