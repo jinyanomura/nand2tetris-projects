@@ -1,10 +1,14 @@
 class Memory {
 
-    static Array ram;
+    static Array ram, heap, freeList;
 
-    // init initializes the base address of ram to 0.
+    // init initializes ram and freeList.
     function void init() {
-        let ram = 0;
+        let ram = 0;                  // base address of ram
+        let heap = 2048;              // base address of heap
+        let freeList = 2048;          // base address of initial freeList
+        let freeList[0] = 14335;      // length of initial freeList
+        let freeList[1] = 0;          // initial value of next freeList address
         return;
     }
 
@@ -21,9 +25,44 @@ class Memory {
 
     // alloc finds an available RAM block of given size and returns its base address.
     function int alloc(int size) {
+        // i : freeList index
+        // bAddr : block base address
+        var int i, bAddr;
+
+        // size : size + 2 words for alocating its length and next freeList address when deallocated
+        let size = size + 2;
+
+        // search available freeList with enough size to allocate
+        while (freeList[i] < size) {
+            let i = freeList[i + 1];
+            if (i = 0) {
+                // couldn't find available space in heap. Defragmentation might be implemented here.
+            }
+        }
+
+        // update remaining size of the found freeList
+        let freeList[i] = freeList[i] - size;
+
+        // calculate the bAddr, and set its length to RAM[bAddr]
+        let bAddr = i + freeList[i] + heap;
+        let ram[bAddr] = size;
+
+        return bAddr;
     }
 
     // deAlloc de-allocates given object from the RAM.
     function void deAlloc(Array o) {
+        var int i;
+
+        // search the last item of freeList
+        while (~(freeList[i + 1] = 0)) {
+            let i = freeList[i + 1];
+        }
+
+        // append o to freeList
+        let freeList[i + 1] = o - heap;
+        let o[1] = 0;
+
+        return;
     }
 }
