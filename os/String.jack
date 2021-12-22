@@ -1,0 +1,38 @@
+class String {
+
+    constructor String new(int maxLength) {
+    }
+
+    method void dispose() {
+    }
+
+    method int length() {
+    }
+
+    method char charAt(int j) {
+    }
+
+    method void setCharAt(int j, char c) {
+    }
+
+    method String appendChar(char c) {
+    }
+
+    method void eraseLastChar() {
+    }
+
+    method int intValue() {
+    }
+
+    method void setInt(int val) {
+    }
+
+    function char newLine() {
+    }
+
+    function char backSpace() {
+    }
+
+    function char doubleQuote() {
+    }
+}
