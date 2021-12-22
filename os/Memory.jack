@@ -1,0 +1,25 @@
+class Memory {
+
+    static Array ram;
+
+    // init initializes the base address of ram to 0.
+    function void init() {
+        let ram = 0;
+    }
+
+    // peek returns the RAM value at given address.
+    function int peek(int address) {
+    }
+
+    // poke sets the RAM value at given address to given value.
+    function void poke(int address, int value) {
+    }
+
+    // alloc finds an available RAM block of given size and returns its base address.
+    function int alloc(int size) {
+    }
+
+    // deAlloc de-allocates given object from the RAM.
+    function void deAlloc(Array o) {
+    }
+}
