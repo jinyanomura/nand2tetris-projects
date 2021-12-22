@@ -1,20 +1,22 @@
 class Math {
     
-    // powerOf2 should be : [1, 2, 4, 8, 16, 32, 64, 128, 256, 512, 1024, 2048, 4096, 8192, 16384, 32768]
-    static Array powerOf2
+    // powerOf2 should be : [1, 2, 4, 8, 16, 32, 64, 128, 256, 512, 1024, 2048, 4096, 8192, 16384]
+    static Array powerOf2;
 
     // init initializes the library.
     function void init() {
         var int i;
 
-        let powerOf2 = Array.new(16);
+        let powerOf2 = Array.new(15);
         let powerOf2[0] = 1;
 
-        let i = 1
-        while (i < 16) {
-            let powerOf2[i] = powerOf2[i-1] * 2;
+        let i = 1;
+        while (i < 15) {
+            let powerOf2[i] = powerOf2[i-1] + powerOf2[i-1];
             let i = i + 1;
         }
+
+        return;
     }
 
     // abs returns the absolute value of n.
@@ -31,16 +33,21 @@ class Math {
         var int i;
         var Array bin;
 
+        // initialize bin
         let bin = Array.new(16);
+        while (i < 16) {
+            let bin[i] = 0;
+            let i = i + 1;
+        }
 
+        // append 1 where appropriate
+        let i = 14;
         while (n > 0) {
-            while (~(n < powerOf2[i])) {
-                let i = i + 1;
+            if (~(n < powerOf2[i]) & (i < 15)) {
+                let bin[15-i] = 1;
+                let n = n - powerOf2[i];
             }
-
-            let bin[16 - i] = 1;
-            let n = n - powerOf2[i - 1];
-            let i = 0;
+            let i = i - 1;
         }
 
         return bin;
@@ -48,20 +55,28 @@ class Math {
 
     // multiply returns the product of x and y.
     function int multiply(int x, int y) {
-        var int sum, shiftedX, i;
+        var int sum, shiftedX, temp, i;
         var boolean isNeg;
         var Array binY;
 
         // if either x or y is negative, set isNeg to true
-        let isNeg = (x < 0 & y > 0) | (x > 0 & x < 0);
+        let isNeg = (x < 0 & y > 0) | (x > 0 & y < 0);
 
-        let x = abs(x);
-        let y = abs(y);
+        let x = Math.abs(x);
+        let y = Math.abs(y);
+
+        // swap if x < y
+        if (x < y) {
+            let temp = x;
+            let x = y;
+            let y = temp;
+        }
+
         let shiftedX = x;
-        let binY = toBin(y);
+        let binY = Math.toBin(y);
         let i = 15;
 
-        while (i > -1) {
+        while (i > 0) {
             if (binY[i] = 1) {
                 let sum = sum + shiftedX;
             }
@@ -72,32 +87,45 @@ class Math {
         do binY.dispose();
 
         if (isNeg) {
-            let sum = -sum;
+            return -sum;
         }
-
         return sum;
     }
 
     // divide returns the quotient of x and y.
     function int divide(int x, int y) {
+        var boolean isNeg;
+
+        let isNeg = (x < 0 & y > 0) | (x > 0 & y < 0);
+
+        let x = Math.abs(x);
+        let y = Math.abs(y);
+
+        if (isNeg) {
+            return -Math.divideBody(x, y);
+        }
+        return Math.divideBody(x, y);
+    }
+
+    // divideBody returns the quotient of x and y if both are positive.
+    function int divideBody(int x, int y) {
         var int q;
 
         if (y > x) {
             return 0;
         }
 
-        let q = divide(x, 2 * y);
+        let q = Math.divideBody(x, 2 * y);
 
         if ((x - (2 * q * y)) < y) {
             return 2 * q;
-        } else {
-            return 2 * q + 1;
         }
+        return 2 * q + 1;
     }
 
     // power returns x to power y.
     function int power(int x, int y) {
-        var n int;
+        var int n;
 
         let n = 1;
 
@@ -111,13 +139,14 @@ class Math {
 
     // sqrt returns the integer part of the square root of n.
     function int sqrt(int n) {
-        var int m, i, temp;
+        var int m, i, temp, temp2;
 
-        let i = n / 2 - 1;
+        let i = 7;
 
         while (i > -1) {
-            let temp = m + power(2, i)
-            if (~(power(temp, 2) > n)) {
+            let temp = m + Math.power(2, i);
+            let temp2 = Math.power(temp, 2);
+            if (~(temp2 > n) & (temp2 > 0)) {
                 let m = temp;
             }
             let i = i - 1;
@@ -130,17 +159,16 @@ class Math {
     function int max(int x, int y) {
         if (x > y) {
             return x;
-        } else {
-            return y;
         }
+        return y;
+        
     }
 
     // min compares x and y, then returns the smaller number.
     function int min(int x, int y) {
         if (x < y) {
             return x;
-        } else {
-            return y;
         }
+        return y;
     }
 }
