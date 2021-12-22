@@ -1,0 +1,15 @@
+class Array {
+
+    // new constructs a new array of given size.
+    function Array new(int size) {
+        if (~(size > 0)) {
+            do Sys.error(2);
+        }
+        return Memory.alloc(size);
+    }
+
+    // dispose de-allocates given array object from heap.
+    method void dispose() {
+        return Memory.deAlloc(this);
+    }
+}
