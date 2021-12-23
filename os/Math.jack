@@ -96,6 +96,10 @@ class Math {
     function int divide(int x, int y) {
         var boolean isNeg;
 
+        if (y = 0) {
+            do Sys.error(3);
+        }
+
         let isNeg = (x < 0 & y > 0) | (x > 0 & y < 0);
 
         let x = Math.abs(x);
@@ -109,18 +113,27 @@ class Math {
 
     // divideBody returns the quotient of x and y if both are positive.
     function int divideBody(int x, int y) {
-        var int q;
+        var int q, i;
 
         if (y > x) {
             return 0;
         }
 
-        let q = Math.divideBody(x, 2 * y);
+        let q = Math.divideBody(x, (y + y));
 
-        if ((x - (2 * q * y)) < y) {
-            return 2 * q;
+        if ((x - ((q + q) * y)) < y) {
+            return q + q;
         }
-        return 2 * q + 1;
+        return q + q + 1;
+    }
+
+    // modulo calculates remainder of x/y.
+    function int modulo(int x, int y) {
+        var int remainder;
+
+        let remainder = x - (x / y * y);
+
+        return remainder;
     }
 
     // power returns x to power y.

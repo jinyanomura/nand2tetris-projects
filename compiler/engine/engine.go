@@ -20,7 +20,7 @@ type Engine struct {
 	LabelCount     int
 }
 
-var opcode = []string{"+", "-", "*", "/", "&", "|", "<", ">", "="}
+var opcode = []string{"+", "-", "*", "/", "&", "|", "<", ">", "=", "%"}
 
 // CompileExpressionList compiles arguments of subroutine calls, and returns its number.
 func (e *Engine) CompileExpressionList() int {

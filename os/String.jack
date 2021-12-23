@@ -108,7 +108,7 @@ class String {
         let val = Math.abs(val);
 
         while ((val > 0) & (i < 5)) {
-            let least = val - (val / 10 * 10);
+            let least = val % 10;
             let temp[i] = least + 48;
             let val = val / 10;
             let i = i + 1;

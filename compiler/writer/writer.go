@@ -39,6 +39,8 @@ func (w *Writer) WriteArithmetic(cmd string) {
 			w.VM = append(w.VM, "call Math.multiply 2")
 		case "/":
 			w.VM = append(w.VM, "call Math.divide 2")
+		case "%":
+			w.VM = append(w.VM, "call Math.modulo 2")
 		}
 	}
 }

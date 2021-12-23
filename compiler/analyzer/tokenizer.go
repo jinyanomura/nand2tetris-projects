@@ -13,7 +13,7 @@ type Token struct {
 	Key, Content string
 }
 
-var Symbols = []byte{'{', '}', '(', ')', '[', ']', '.', ',', ';', '+', '-', '*', '/', '&', '|', '<', '>', '=', '~'}
+var Symbols = []byte{'{', '}', '(', ')', '[', ']', '.', ',', ';', '+', '-', '*', '/', '&', '|', '<', '>', '=', '~', '%'}
 
 var Keywords = map[string]Token{
 	"class":       {Key: "keyword", Content: "class"},
