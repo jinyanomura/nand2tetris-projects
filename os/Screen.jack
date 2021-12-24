@@ -96,9 +96,20 @@ class Screen {
         let left = start / 16;
         let right = end / 16;
 
-        // draw the left edge
         let addr = row + left;
         let pos = start - (left * 16);
+
+        // if 2 points are on the same memory cell
+        if (left = right) {
+            let left = left * 16;
+            while (~(left + pos > end)) {
+                do Screen.updateLocation(addr, powerOf2[pos]);
+                let pos = pos + 1;
+            }
+            return;
+        }
+
+        // draw the left edge
         while (pos < 16) {
             do Screen.updateLocation(addr, powerOf2[pos]);
             let pos = pos + 1;
@@ -215,5 +226,15 @@ class Screen {
     }
 
     function void drawCircle(int x, int y, int r) {
+        var int dx, dy;
+
+        let dy = r;
+        while (~(dy < -r)) {
+            let dx = Math.sqrt((r * r) - (dy * dy));
+            do Screen.drawHorizontal(y + dy, x - dx, x + dx);
+            let dy = dy - 1;
+        }
+
+        return;
     }
 }
