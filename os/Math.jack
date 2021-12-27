@@ -1,19 +1,20 @@
 class Math {
     
-    // powerOf2 should be : [1, 2, 4, 8, 16, 32, 64, 128, 256, 512, 1024, 2048, 4096, 8192, 16384]
+    // powerOf2 should be : [0, 16384, 8192, 4096, 2048, 1024, 512, 256, 128, 64, 32, 16, 8, 4, 2, 1]
     static Array powerOf2;
 
     // init initializes the library.
     function void init() {
         var int i;
 
-        let powerOf2 = Array.new(15);
-        let powerOf2[0] = 1;
+        let powerOf2 = Array.new(16);
+        let powerOf2[15] = 1;
+        let powerOf2[0] = 0;
 
-        let i = 1;
-        while (i < 15) {
-            let powerOf2[i] = powerOf2[i-1] + powerOf2[i-1];
-            let i = i + 1;
+        let i = 14;
+        while (i > 0) {
+            let powerOf2[i] = powerOf2[i+1] + powerOf2[i+1];
+            let i = i - 1;
         }
 
         return;
@@ -27,37 +28,10 @@ class Math {
         return n;
     }
 
-    // toBin returns an array consists of 16 bit binary forms of n.
-    // if n == 5, returned array would be [0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,1].
-    function Array toBin(int n) {
-        var int i;
-        var Array bin;
-
-        // initialize bin
-        let bin = Array.new(16);
-        while (i < 16) {
-            let bin[i] = 0;
-            let i = i + 1;
-        }
-
-        // append 1 where appropriate
-        let i = 14;
-        while (n > 0) {
-            if (~(n < powerOf2[i]) & (i < 15)) {
-                let bin[15-i] = 1;
-                let n = n - powerOf2[i];
-            }
-            let i = i - 1;
-        }
-
-        return bin;
-    }
-
     // multiply returns the product of x and y.
     function int multiply(int x, int y) {
-        var int sum, shiftedX, temp, i;
+        var int sum, shiftedX, i;
         var boolean isNeg;
-        var Array binY;
 
         // if either x or y is negative, set isNeg to true
         let isNeg = (x < 0 & y > 0) | (x > 0 & y < 0);
@@ -65,26 +39,16 @@ class Math {
         let x = Math.abs(x);
         let y = Math.abs(y);
 
-        // swap if x < y
-        if (x < y) {
-            let temp = x;
-            let x = y;
-            let y = temp;
-        }
-
         let shiftedX = x;
-        let binY = Math.toBin(y);
         let i = 15;
 
         while (i > 0) {
-            if (binY[i] = 1) {
+            if (~((y & powerOf2[i]) = 0)) {
                 let sum = sum + shiftedX;
             }
             let shiftedX = shiftedX + shiftedX;
             let i = i - 1;
         }
-
-        do binY.dispose();
 
         if (isNeg) {
             return -sum;

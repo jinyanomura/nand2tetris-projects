@@ -189,18 +189,25 @@ class Output {
         let col = i;
         let row = j;
 
-        // clears field
+        do Output.clear();
+
+        return;
+    }
+
+    // clear clears the screen where cursor is pointing at.
+    function void clear() {
+        var int i, n, addr;
+
         if (isEven) {
             let n = ~255;
         } else {
             let n = 255;
         }
-
         let addr = cursor;
-        while (m < 11) {
+        while (i < 11) {
             let screen[addr] = (screen[addr] & n);
             let addr = addr + 32;
-            let m = m + 1;
+            let i = i + 1;
         }
 
         return;
@@ -211,8 +218,18 @@ class Output {
         var int i, addr;
         var Array c;
 
-        if ((index < 32) | (index > 126)) {
-            let index = 0;
+        if (index = 129) {
+            do Output.backSpace();
+            return;
+        } else {
+            if (index = 128) {
+                do Output.println();
+                return;
+            } else {
+                if ((index < 32) | (index > 126)) {
+                    let index = 0;
+                }
+            }
         }
 
         let c = charMap[index];
@@ -281,7 +298,24 @@ class Output {
 
     // backSpace moves the cursor one step backward.
     function void backSpace() {
-        do Output.moveCursor(col - 1, row);
+        if (col = 0) {
+            if (rol = 0) {
+                do Sys.error(1);
+            } else {
+                let col = 63;
+                let row = row - 1;
+            }
+        } else {
+            let col = col - 1;
+        }
+
+        if (isEven) {
+            let cursor = cursor - 1;
+        }
+
+        let isEven = ~isEven;
+        do Output.clear();
+
         return;
     }
 }
