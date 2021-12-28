@@ -10,7 +10,7 @@ class Strings {
         let len = s.length() - sub.length();
         let match = false;
 
-        while (i < len) {
+        while (~(i > len)) {
             if (s.charAt(i) = sub.charAt(0)) {
                 let match = true;
                 let j = i + 1;

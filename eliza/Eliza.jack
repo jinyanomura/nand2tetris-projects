@@ -68,19 +68,15 @@ class Eliza {
         let responses = Dictionary.getResponses();
 
         // Loop through the matches list
-        let i = 0;
         let numMatch = 39;
         let numKey = 12;
         let out = responses[numMatch];
         while (i < numMatch) {
             let match = matches[i];
-            let position = Strings.index(userInput, match);
-            
+            let position = Strings.index(userInput, match);            
             if (position > -1) {
                 let position = position + match.length() + 1;
                 let exploded = Strings.split(position, userInput);
-
-                let j = 0;
                 while (j < exploded.length()) {
                     let k = 0;
                     let done = false;
