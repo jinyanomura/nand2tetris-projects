@@ -1,17 +1,17 @@
 class Main {
     function void main() {
-        var Eliza e;
         var String userInput;
         var boolean isRunning;
 
-        let e = Eliza.new();
+        do Dictionary.init();
+        do Eliza.init();
+
         let isRunning = true;
         do Eliza.printIntro();
 
         while (isRunning) {
-            do Output.printString("-> ");
             let userInput = String.new(30);
-            let userInput = Keyboard.readLine(userInput);
+            let userInput = Keyboard.readLine("-> ");
 
             do Output.println();
 
@@ -21,6 +21,7 @@ class Main {
             } else {
                 let isRunning = false;
             }
+            do userInput.dispose();
         }
         do Output.printString("SEE YOU SOON.");
 

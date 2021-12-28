@@ -1,4 +1,6 @@
 class Strings {
+    
+    // index returns the index of s where sub is found, -1 otherwise.
     function int index(String s, String sub) {
         var int i, j, k, pos, len;
         var boolean match;
@@ -33,6 +35,7 @@ class Strings {
         return pos;
     }
 
+    // split splits s into its composing words.
     function List split(int i, String s) {
         var List words;
         var String word;
@@ -65,6 +68,7 @@ class Strings {
         return words;
     }
 
+    // replace updates s which old is replaced with new, does nothing if old is not found.
     function String replace(String s, String old, String new) {
         var String out;
         var int i, j, pos, len;
@@ -99,6 +103,7 @@ class Strings {
         return out;
     }
 
+    // isSame judges if given strings s and t is the same.
     function boolean isSame(String s, String t) {
         var int i;
         let i = 0;
@@ -118,6 +123,7 @@ class Strings {
         }
     }
 
+    // join puts every word together from given List.
     function String join(List l) {
         var int i, j, len;
         var String s, el;

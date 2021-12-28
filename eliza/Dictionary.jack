@@ -1,10 +1,8 @@
 class Dictionary {
-    field Array matches;
-    field Array keys;
-    field Array reflections;
-    field Array responses;
+    
+    static Array matches, keys, reflections, responses;
 
-    constructor Dictionary new() {
+    function void init() {
         let matches = Array.new(39);
         let keys = Array.new(12);
         let reflections = Array.new(12);
@@ -78,20 +76,20 @@ class Dictionary {
 
         let responses[0] = "LIFE? DON'T TALK TO ME ABOUT LIFE.";
         let responses[1] = "WHY DO YOU NEED %1?";
-        let responses[2] = "DO YOU REALLY THINK I DON'T %1?";
-        let responses[3] = "DO YOU THINK YOU SHOULD BE ABLE TO %1?";
+        let responses[2] = "PERHAPS EVENTUALLY I WILL %1?";
+        let responses[3] = "IF YOU COULD %1, WHAT WOULD YOU DO?";
         let responses[4] = "HOW DO YOU KNOW YOU CAN'T %1?";
         let responses[5] = "DID YOU COME TO ME BECAUSE YOU ARE %1?";
-        let responses[6] = "HOW DOES BEING %1 MAKE YOU FEEL?";
+        let responses[6] = "WHY DO YOU TELL ME YOU ARE %1?";
         let responses[7] = "WHY DOES IT MATTER WHETHER I AM %1?";
-        let responses[8] = "WHY DO YOU ASK?";
+        let responses[8] = "WHAT DO YOU THINK?";
         let responses[9] = "HOW DO YOU SUPPOSE?";
         let responses[10] = "IS THAT THE REAL REASON?";
         let responses[11] = "THERE ARE MANY TIMES WHEN NO APOLOGY IS NEEDED.";
         let responses[12] = "DO YOU DOUBT %1?";
         let responses[13] = "TELL ME MORE ABOUT YOUR FRIENDS.";
         let responses[14] = "YOU SEEM QUITE SURE.";
-        let responses[15] = "ARE YOU REALLY TALKING ABOUT ME?";
+        let responses[15] = "DOES IT SEEM WIRED TALKING TO A COMPUTER?";
         let responses[16] = "DO YOU THINK IT IS %1?";
         let responses[17] = "YOU SEEM VERY CERTAIN.";
         let responses[18] = "WHAT MAKES YOU THINK I CAN'T %1?";
@@ -101,10 +99,10 @@ class Dictionary {
         let responses[22] = "DON'T YOU REALLY %1?";
         let responses[23] = "GOOD, TELL ME MORE ABOUT THESE FEELINGS.";
         let responses[24] = "WHY DO YOU TELL ME THAT YOU'VE %1?";
-        let responses[25] = "WHY DO YOU TELL ME THAT YOU'VE %1?";
+        let responses[25] = "HAVE YOU REALLY %1?";
         let responses[26] = "COULD YOU EXPLAIN WHY YOU WOULD %1?";
         let responses[27] = "DO YOU THINK THERE IS %1?";
-        let responses[28] = "I SEE, YOUR %1.";
+        let responses[28] = "I SEE, YOU'RE %1.";
         let responses[29] = "WE SHOULD BE DISCUSSING YOU, NOT ME.";
         let responses[30] = "WHY DON'T YOU TELL ME THE REASON WHY %1?";
         let responses[31] = "WHAT WOULD IT MEAN TO YOU IF YOU GOT %1?";
@@ -117,19 +115,19 @@ class Dictionary {
         let responses[38] = "HEY... I'M GLAD YOU COULD DROP BY TODAY.";
         let responses[39] = "PLEASE TELL ME MORE ABOUT IT.";
 
-        return this;
+        return;
     }
 
-    method Array getMatches() {
+    function Array getMatches() {
         return matches;
     }
-    method Array getKeys() {
+    function Array getKeys() {
         return keys;
     }
-    method Array getReflections() {
+    function Array getReflections() {
         return reflections;
     }
-    method Array getResponses() {
+    function Array getResponses() {
         return responses;
     }
 }
