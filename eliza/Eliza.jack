@@ -1,13 +1,47 @@
 class Eliza {
-    field Dictionary d;
 
-    constructor Eliza new() {
-        let d = Dictionary.new();
-        return this;
-    }
+    function void init() {
+        var int i;
 
-    method Dictionary getD() {
-        return d;
+        // top
+        while (i < 20) {
+            do Screen.drawHorizontal(10 + i, 62, 449);
+            let i = i + 1;
+        }
+        
+        // side
+        let i = 0;
+        while (i < 22) {
+            do Screen.drawVertical(40 + i, 10, 225);
+            do Screen.drawVertical(450 + i, 10, 225);
+            let i = i + 1;
+        }
+
+        // corner
+        let i = 0;
+        while (i < 3) {
+            do Screen.drawVertical(39 - i, 10 + i, 225 - i);
+            do Screen.drawVertical(472 + i, 10 + i, 225 - i);
+            let i = i + 1;
+        }
+
+        // bottom
+        let i = 0;
+        while (i < 25) {
+            do Screen.drawHorizontal(201 + i, 62, 449);
+            let i = i + 1;
+        }
+
+        // base
+        let i = 0;
+        while (i < 30) {
+            do Screen.drawHorizontal(225 + i, 200 - i, 311 + i);
+            let i = i + 1;
+        }
+
+        do Output.setRange(8, 55, 3, 17);
+
+        return;
     }
 
     function void printIntro() {
@@ -21,8 +55,6 @@ class Eliza {
     }
 
     function void printResponse(String userInput) {
-        var Eliza e;
-        var Dictionary d;
         var Array matches, keys, reflections, responses;
         var List exploded, reflected;
         var String match, out, remainder;
@@ -30,12 +62,10 @@ class Eliza {
         var boolean done;
 
         // get necessary arrays from Dictionary.jack
-        let e = Eliza.new();
-        let d = e.getD();
-        let matches = d.getMatches();
-        let keys = d.getKeys();
-        let reflections = d.getReflections();
-        let responses = d.getResponses();
+        let matches = Dictionary.getMatches();
+        let keys = Dictionary.getKeys();
+        let reflections = Dictionary.getReflections();
+        let responses = Dictionary.getResponses();
 
         // Loop through the matches list
         let i = 0;
@@ -75,6 +105,13 @@ class Eliza {
 
         let out = Strings.replace(out, "%1", remainder);
         do Output.printString(out);
+
+        if (position > -1) {
+            do remainder.dispose();
+            do out.dispose();
+            do exploded.dispose();
+            do reflected.dispose();
+        }
 
         return;
     }
