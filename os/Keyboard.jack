@@ -19,6 +19,7 @@ class Keyboard {
     function char readChar() {
         var char c;
 
+        do Output.printChar(0);
         while (ram[keyboard] = 0) {
             // waits until key is pressed
         }
@@ -28,6 +29,7 @@ class Keyboard {
         while (~(ram[keyboard] = 0)) {
             // waits until key is released
         }
+        do Output.backSpace();
 
         do Output.printChar(c);
         

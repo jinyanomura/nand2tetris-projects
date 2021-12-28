@@ -3,15 +3,20 @@ class Output {
     static Array charMap;            // Character map for displaying characters.
     static Array screen;             // base address of screen memory segment.
     static int cursor, col, row;     // current cursor, column, row position
+    static int minCol, minRow, maxCol, maxRow;
+    static int colBase, rowBase, colEnd, rowEnd;
+    static int offset;
     static boolean isEven;           // if cursor is currently pointing at even x coordinate.
 
     // init initializes the screen, and locates the cursor at the screen's top-left corner.
     function void init() {
         let screen = 16384;
         let isEven = true;
-        let cursor = 0;
-        let col = 0;
-        let row = 0;
+        let maxCol = 63;
+        let maxRow = 22;
+        let colEnd = 31;
+        let rowEnd = 7744;
+        let offset = 1;
         do Output.initMap();
         return;
     }
@@ -155,19 +160,35 @@ class Output {
         return;
     }
 
+    // setRange sets the range which outputs are displayed. a and b should be even and odd number respectively.
+    function void setRange(int a, int b, int c, int d) {
+        let minCol = a;
+        let maxCol = b;
+        let minRow = c;
+        let maxRow = d;
+        let colBase = a / 2;
+        let rowBase = c * 352;
+        let colEnd = (b - 1) / 2;
+        let rowEnd = d * 352;
+        let offset = (a - b + 63) / 2;
+        do Output.moveCursor(a, c);
+        return;
+    }
+
     // next moves cursor to the next half of memory cell.
     function void next() {
         if (~isEven) {
-            let cursor = cursor + 1;
-            if (col < 63) {
+            if (col < maxCol) {
                 let col = col + 1;
+                let cursor = cursor + 1;
             } else {
-                let col = 0;
-                if (row < 22) {
+                let col = minCol;
+                if (row < maxRow) {
                     let row = row + 1;
+                    let cursor = cursor + offset;
                 } else {
-                    let row = 0;
-                    let cursor = 0;
+                    do Output.scroll();
+                    do Output.moveCursor(minCol, maxRow);
                 }
             }
         } else {
@@ -181,7 +202,7 @@ class Output {
     // moveCursor moves the current position of cursor to (i, j), and clears the field.
     function void moveCursor(int i, int j) {
         var int n, m, addr;
-        if ((i < 0) | (i > 63)| (j < 0) | (j > 22)) {
+        if ((i < minCol) | (i > maxCol)| (j < minRow) | (j > maxRow)) {
             do Sys.error(20);
         }
         let cursor = ((32 * 11 * j) + (i / 2));
@@ -190,6 +211,35 @@ class Output {
         let row = j;
 
         do Output.clear();
+
+        return;
+    }
+
+    // scroll scrolls up by one row.
+    function void scroll() {
+        var int i, j, k, end;
+
+        let i = colBase;
+        let j = rowBase;
+        let end = rowEnd;
+
+        while (j < end) {
+            while (~(i > colEnd)) {
+                let screen[i + j] = screen[i + j + 352];
+                let i = i + 1;
+            }
+            let i = colBase;
+            let j = j + 32;
+        }
+
+        while (~(i > colEnd)) {
+            while (k < 352) {
+                let screen[i + j + k] = 0;
+                let k = k + 32;
+            }
+            let k = 0;
+            let i = i + 1;
+        }
 
         return;
     }
@@ -288,31 +338,29 @@ class Output {
 
     // println moves the cursor to the first column of the next row.
     function void println() {
-        if (row < 22) {
-            do Output.moveCursor(0, row + 1);
+        if (row < maxRow) {
+            do Output.moveCursor(minCol, row + 1);
         } else {
-            do Output.moveCursor(0, 0);
+            do Output.scroll();
+            do Output.moveCursor(minCol, maxRow);
         }
         return;
     }
 
     // backSpace moves the cursor one step backward.
     function void backSpace() {
-        if (col = 0) {
-            if (rol = 0) {
+        if (col = minCol) {
+            if (rol = minRow) {
                 do Sys.error(1);
             } else {
-                let col = 63;
-                let row = row - 1;
+                do Output.moveCursor(maxCol, row - 1);
             }
         } else {
             let col = col - 1;
+            if (isEven) {
+                let cursor = cursor - 1;
+            }
         }
-
-        if (isEven) {
-            let cursor = cursor - 1;
-        }
-
         let isEven = ~isEven;
         do Output.clear();
 
